@@ -110,43 +110,65 @@ export default class LevelCompleteScene extends Phaser.Scene {
 
     // Next Level button
     if (this.levelNumber < 10) {
-      const nextBtn = this.add.text(width / 2, 460, 'Next Level >', {
+      const nextBtnBg = this.add.rectangle(width / 2, 460, 240, 50, 0x27ae60)
+        .setStrokeStyle(3, 0x1e8449)
+        .setAlpha(0)
+        .setInteractive({ useHandCursor: true });
+
+      const nextBtnText = this.add.text(width / 2, 460, 'Next Level >', {
         fontSize: '26px',
         fontFamily: 'Fredoka One',
-        color: '#ffffff',
-        backgroundColor: '#27ae60',
-        padding: { x: 20, y: 10 }
-      }).setOrigin(0.5).setAlpha(0).setInteractive({ useHandCursor: true });
+        color: '#ffffff'
+      }).setOrigin(0.5).setAlpha(0);
 
       this.tweens.add({
-        targets: nextBtn,
+        targets: [nextBtnBg, nextBtnText],
         alpha: 1,
         duration: 300,
         delay: btnDelay
       });
 
-      nextBtn.on('pointerover', () => nextBtn.setScale(1.1));
-      nextBtn.on('pointerout', () => nextBtn.setScale(1));
-      nextBtn.on('pointerdown', () => {
+      nextBtnBg.on('pointerover', () => {
+        nextBtnBg.setScale(1.1);
+        nextBtnText.setScale(1.1);
+      });
+      nextBtnBg.on('pointerout', () => {
+        nextBtnBg.setScale(1);
+        nextBtnText.setScale(1);
+      });
+      nextBtnBg.on('pointerdown', () => {
         this.scene.start('Game', { levelNumber: this.levelNumber + 1 });
       });
     }
 
     // Level Select button
-    const selectBtn = this.add.text(width / 2, 520, 'Level Select', {
+    const selectBtnBg = this.add.rectangle(width / 2, 520, 200, 40, 0x34495e)
+      .setStrokeStyle(2, 0x2c3e50)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+
+    const selectBtnText = this.add.text(width / 2, 520, 'Level Select', {
       fontSize: '20px',
       fontFamily: 'Fredoka One',
       color: '#bdc3c7'
-    }).setOrigin(0.5).setAlpha(0).setInteractive({ useHandCursor: true });
+    }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
-      targets: selectBtn,
+      targets: [selectBtnBg, selectBtnText],
       alpha: 1,
       duration: 300,
       delay: btnDelay + 200
     });
 
-    selectBtn.on('pointerdown', () => {
+    selectBtnBg.on('pointerover', () => {
+      selectBtnBg.setScale(1.1);
+      selectBtnText.setScale(1.1);
+    });
+    selectBtnBg.on('pointerout', () => {
+      selectBtnBg.setScale(1);
+      selectBtnText.setScale(1);
+    });
+    selectBtnBg.on('pointerdown', () => {
       this.scene.start('LevelSelect');
     });
   }
