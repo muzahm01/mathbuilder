@@ -51,6 +51,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Jumping (only when on the ground)
     if (doJump && this.body.blocked.down) {
       this.setVelocityY(this.JUMP_VELOCITY);
+      this.scene.sound.play('sfx-jump', { volume: 0.5 });
     }
 
     // Animation state

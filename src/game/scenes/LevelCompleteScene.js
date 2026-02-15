@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { ParticleManager } from '../systems/ParticleManager.js';
 
 export default class LevelCompleteScene extends Phaser.Scene {
   constructor() {
@@ -15,6 +16,9 @@ export default class LevelCompleteScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+
+    // ── Fade in ──────────────────────────────────────
+    this.cameras.main.fadeIn(300, 0, 0, 0);
 
     // ── Background ─────────────────────────────────
     this.add.image(width / 2, height / 2, 'sky');
@@ -58,9 +62,19 @@ export default class LevelCompleteScene extends Phaser.Scene {
         scale: 2.5,
         duration: 400,
         delay: 500 + i * 300,
-        ease: 'Back.easeOut'
+        ease: 'Back.easeOut',
+        onComplete: () => {
+          if (isFilled) {
+            ParticleManager.sparkle(this, star.x, star.y);
+          }
+        }
       });
     }
+
+    // ── Confetti after stars finish animating ─────────
+    this.time.delayedCall(1500, () => {
+      ParticleManager.confetti(this);
+    });
 
     // ── XP Earned ──────────────────────────────────
     const xpText = this.add.text(width / 2, 320, `+${this.xpEarned} XP`, {

@@ -62,5 +62,17 @@ export default class MenuScene extends Phaser.Scene {
       fontFamily: 'Fredoka One',
       color: '#bdc3c7'
     }).setOrigin(0.5);
+
+    // ── Mute Button ──────────────────────────────
+    let muted = this.sound.mute;
+    const muteBtn = this.add.text(760, 30, muted ? '🔇' : '🔊', {
+      fontSize: '24px'
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    muteBtn.on('pointerdown', () => {
+      muted = !muted;
+      this.sound.mute = muted;
+      muteBtn.setText(muted ? '🔇' : '🔊');
+    });
   }
 }

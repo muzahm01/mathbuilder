@@ -71,6 +71,18 @@ export default class PreloadScene extends Phaser.Scene {
     // ── Particles ────────────────────────────────────
     this.load.image('dust', 'assets/images/particles/dust.png');
     this.load.image('confetti', 'assets/images/particles/confetti.png');
+
+    // ── Touch Controls ─────────────────────────────
+    this.load.image('arrow-left', 'assets/images/ui/arrow-left.png');
+    this.load.image('arrow-right', 'assets/images/ui/arrow-right.png');
+    this.load.image('arrow-jump', 'assets/images/ui/arrow-jump.png');
+
+    // ── Audio ──────────────────────────────────────
+    this.load.audio('sfx-jump', 'assets/audio/jump.wav');
+    this.load.audio('sfx-correct', 'assets/audio/correct.wav');
+    this.load.audio('sfx-wrong', 'assets/audio/wrong.wav');
+    this.load.audio('sfx-build', 'assets/audio/build.wav');
+    this.load.audio('sfx-win', 'assets/audio/win.wav');
   }
 
   create() {

@@ -21,6 +21,7 @@ body {
 
 #game-container canvas {
   display: block;
+  touch-action: none;
 }
 
 /* ── Math Input Overlay ────────────────────────────── */
