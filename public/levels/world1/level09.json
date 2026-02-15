@@ -1,0 +1,20 @@
+{
+  "id": 9,
+  "name": "The Gauntlet",
+  "world": "grasslands",
+  "gridWidth": 45,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 43, "gridY": 7 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 8, "tile": "grass-top" },
+    { "gridX": 12, "gridY": 8, "width": 10, "tile": "grass-top" },
+    { "gridX": 28, "gridY": 8, "width": 6, "tile": "grass-top" },
+    { "gridX": 37, "gridY": 8, "width": 8, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 8, "gridY": 8, "width": 4, "correctAnswer": 4 },
+    { "id": "gap2", "gridX": 22, "gridY": 8, "width": 6, "correctAnswer": 6 },
+    { "id": "gap3", "gridX": 34, "gridY": 8, "width": 3, "correctAnswer": 3 }
+  ]
+}

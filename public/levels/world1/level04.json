@@ -1,0 +1,18 @@
+{
+  "id": 4,
+  "name": "Double Trouble",
+  "world": "grasslands",
+  "gridWidth": 30,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 28, "gridY": 7 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 6, "tile": "grass-top" },
+    { "gridX": 9, "gridY": 8, "width": 8, "tile": "grass-top" },
+    { "gridX": 19, "gridY": 8, "width": 11, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 6, "gridY": 8, "width": 3, "correctAnswer": 3 },
+    { "id": "gap2", "gridX": 17, "gridY": 8, "width": 2, "correctAnswer": 2 }
+  ]
+}

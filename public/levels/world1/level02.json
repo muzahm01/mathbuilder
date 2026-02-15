@@ -1,0 +1,16 @@
+{
+  "id": 2,
+  "name": "One More",
+  "world": "grasslands",
+  "gridWidth": 25,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 23, "gridY": 7 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 6, "tile": "grass-top" },
+    { "gridX": 10, "gridY": 8, "width": 15, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 6, "gridY": 8, "width": 4, "correctAnswer": 4 }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": 6,
+  "name": "Rising Up",
+  "world": "grasslands",
+  "gridWidth": 30,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 28, "gridY": 6 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 10, "tile": "grass-top" },
+    { "gridX": 13, "gridY": 8, "width": 5, "tile": "grass-top" },
+    { "gridX": 23, "gridY": 7, "width": 7, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 10, "gridY": 8, "width": 3, "correctAnswer": 3 },
+    { "id": "gap2", "gridX": 18, "gridY": 8, "width": 5, "correctAnswer": 5 }
+  ]
+}

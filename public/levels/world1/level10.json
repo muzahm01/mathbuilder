@@ -1,0 +1,16 @@
+{
+  "id": 10,
+  "name": "Mega Bridge",
+  "world": "grasslands",
+  "gridWidth": 50,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 48, "gridY": 7 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 18, "tile": "grass-top" },
+    { "gridX": 28, "gridY": 8, "width": 22, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 18, "gridY": 8, "width": 10, "correctAnswer": 10 }
+  ]
+}

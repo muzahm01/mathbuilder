@@ -1,0 +1,16 @@
+{
+  "id": 3,
+  "name": "Small Step",
+  "world": "grasslands",
+  "gridWidth": 25,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 23, "gridY": 7 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 10, "tile": "grass-top" },
+    { "gridX": 12, "gridY": 8, "width": 13, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 10, "gridY": 8, "width": 2, "correctAnswer": 2 }
+  ]
+}
