@@ -18,5 +18,10 @@ export default class BootScene extends Phaser.Scene {
         strokeThickness: 6
       }
     ).setOrigin(0.5);
+
+    // Brief delay to ensure web font is loaded, then proceed
+    this.time.delayedCall(500, () => {
+      this.scene.start('Preload');
+    });
   }
 }

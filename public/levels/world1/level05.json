@@ -1,0 +1,18 @@
+{
+  "id": 5,
+  "name": "Think Twice",
+  "world": "grasslands",
+  "gridWidth": 30,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 28, "gridY": 7 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 8, "tile": "grass-top" },
+    { "gridX": 12, "gridY": 8, "width": 6, "tile": "grass-top" },
+    { "gridX": 20, "gridY": 8, "width": 10, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 8, "gridY": 8, "width": 4, "correctAnswer": 4 },
+    { "id": "gap2", "gridX": 18, "gridY": 8, "width": 2, "correctAnswer": 2 }
+  ]
+}

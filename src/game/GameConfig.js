@@ -1,5 +1,10 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
+import PreloadScene from './scenes/PreloadScene.js';
+import MenuScene from './scenes/MenuScene.js';
+import LevelSelectScene from './scenes/LevelSelectScene.js';
+import GameScene from './scenes/GameScene.js';
+import LevelCompleteScene from './scenes/LevelCompleteScene.js';
 
 export const GameConfig = {
   type: Phaser.AUTO,
@@ -18,5 +23,5 @@ export const GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
-  scene: [BootScene]
+  scene: [BootScene, PreloadScene, MenuScene, LevelSelectScene, GameScene, LevelCompleteScene]
 };

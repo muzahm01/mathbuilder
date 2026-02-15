@@ -1,0 +1,18 @@
+{
+  "id": 8,
+  "name": "High Bridge",
+  "world": "grasslands",
+  "gridWidth": 35,
+  "gridHeight": 9,
+  "start": { "gridX": 1, "gridY": 7 },
+  "goal": { "gridX": 33, "gridY": 6 },
+  "platforms": [
+    { "gridX": 0, "gridY": 8, "width": 12, "tile": "grass-top" },
+    { "gridX": 17, "gridY": 8, "width": 6, "tile": "grass-top" },
+    { "gridX": 26, "gridY": 7, "width": 9, "tile": "grass-top" }
+  ],
+  "gaps": [
+    { "id": "gap1", "gridX": 12, "gridY": 8, "width": 5, "correctAnswer": 5 },
+    { "id": "gap2", "gridX": 23, "gridY": 8, "width": 3, "correctAnswer": 3 }
+  ]
+}

@@ -1,0 +1,139 @@
+import Phaser from 'phaser';
+
+export default class LevelCompleteScene extends Phaser.Scene {
+  constructor() {
+    super('LevelComplete');
+  }
+
+  init(data) {
+    this.levelNumber = data.levelNumber;
+    this.stars = data.stars;
+    this.xpEarned = data.xpEarned;
+    this.totalXP = data.totalXP;
+    this.title = data.title;
+  }
+
+  create() {
+    const { width, height } = this.scale;
+
+    // ── Background ─────────────────────────────────
+    this.add.image(width / 2, height / 2, 'sky');
+
+    // ── Semi-transparent overlay ────────────────────
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.4);
+
+    // ── Header ─────────────────────────────────────
+    const header = this.add.text(width / 2, 100, 'Level Complete!', {
+      fontSize: '42px',
+      fontFamily: 'Fredoka One',
+      color: '#f1c40f',
+      stroke: '#2c3e50',
+      strokeThickness: 6
+    }).setOrigin(0.5).setScale(0);
+
+    this.tweens.add({
+      targets: header,
+      scale: 1,
+      duration: 400,
+      ease: 'Back.easeOut'
+    });
+
+    // ── Stars (animate in sequentially) ─────────────
+    const starY = 220;
+    const starSpacing = 80;
+    const starStartX = width / 2 - starSpacing;
+
+    for (let i = 0; i < 3; i++) {
+      const isFilled = i < this.stars;
+      const starKey = isFilled ? 'star-filled' : 'star-empty';
+
+      const star = this.add.image(
+        starStartX + i * starSpacing,
+        starY,
+        starKey
+      ).setScale(0);
+
+      this.tweens.add({
+        targets: star,
+        scale: 2.5,
+        duration: 400,
+        delay: 500 + i * 300,
+        ease: 'Back.easeOut'
+      });
+    }
+
+    // ── XP Earned ──────────────────────────────────
+    const xpText = this.add.text(width / 2, 320, `+${this.xpEarned} XP`, {
+      fontSize: '28px',
+      fontFamily: 'Fredoka One',
+      color: '#27ae60'
+    }).setOrigin(0.5).setAlpha(0);
+
+    this.tweens.add({
+      targets: xpText,
+      alpha: 1,
+      y: xpText.y - 10,
+      duration: 400,
+      delay: 1800
+    });
+
+    // ── Title Display ──────────────────────────────
+    const titleText = this.add.text(width / 2, 370, `Rank: ${this.title}`, {
+      fontSize: '22px',
+      fontFamily: 'Fredoka One',
+      color: '#f39c12'
+    }).setOrigin(0.5).setAlpha(0);
+
+    this.tweens.add({
+      targets: titleText,
+      alpha: 1,
+      duration: 400,
+      delay: 2100
+    });
+
+    // ── Buttons (appear after animations) ───────────
+    const btnDelay = 2500;
+
+    // Next Level button
+    if (this.levelNumber < 10) {
+      const nextBtn = this.add.text(width / 2, 460, 'Next Level >', {
+        fontSize: '26px',
+        fontFamily: 'Fredoka One',
+        color: '#ffffff',
+        backgroundColor: '#27ae60',
+        padding: { x: 20, y: 10 }
+      }).setOrigin(0.5).setAlpha(0).setInteractive({ useHandCursor: true });
+
+      this.tweens.add({
+        targets: nextBtn,
+        alpha: 1,
+        duration: 300,
+        delay: btnDelay
+      });
+
+      nextBtn.on('pointerover', () => nextBtn.setScale(1.1));
+      nextBtn.on('pointerout', () => nextBtn.setScale(1));
+      nextBtn.on('pointerdown', () => {
+        this.scene.start('Game', { levelNumber: this.levelNumber + 1 });
+      });
+    }
+
+    // Level Select button
+    const selectBtn = this.add.text(width / 2, 520, 'Level Select', {
+      fontSize: '20px',
+      fontFamily: 'Fredoka One',
+      color: '#bdc3c7'
+    }).setOrigin(0.5).setAlpha(0).setInteractive({ useHandCursor: true });
+
+    this.tweens.add({
+      targets: selectBtn,
+      alpha: 1,
+      duration: 300,
+      delay: btnDelay + 200
+    });
+
+    selectBtn.on('pointerdown', () => {
+      this.scene.start('LevelSelect');
+    });
+  }
+}
