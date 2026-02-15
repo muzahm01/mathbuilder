@@ -7,6 +7,7 @@ import Player from '../objects/Player.js';
 import GoalFlag from '../objects/GoalFlag.js';
 import { completeLevelAndSave } from '../systems/SaveManager.js';
 import { getTitleForXP } from '../systems/TitleSystem.js';
+import { TouchControls } from '../systems/TouchControls.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -131,6 +132,10 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
+    // ── Touch Controls ──────────────────────────────
+    this.touchControls = new TouchControls(this);
+    this.player.touchControls = this.touchControls;
+
     // ── Math Input UI ────────────────────────────────
     this.mathInputActive = false;
     this.mathUI = new MathInputUI((gapData, correct) => {
@@ -138,11 +143,15 @@ export default class GameScene extends Phaser.Scene {
         this.onCorrectAnswer(gapData);
       } else {
         this.wrongAttempts++;
+        this.sound.play('sfx-wrong', { volume: 0.4 });
       }
     });
 
     // ── Store level data for later reference ─────────
     this.levelData = levelData;
+
+    // ── Fade in ───────────────────────────────────────
+    this.cameras.main.fadeIn(300, 0, 0, 0);
   }
 
   update() {
@@ -176,6 +185,7 @@ export default class GameScene extends Phaser.Scene {
     const zone = this.gapZones.find(z => z.gapData === gapData);
     if (zone) zone.solved = true;
 
+    this.sound.play('sfx-correct', { volume: 0.7 });
     buildBridge(this, gapData, this.platforms);
 
     this.mathInputActive = false;
@@ -189,6 +199,7 @@ export default class GameScene extends Phaser.Scene {
     this.levelComplete = true;
 
     this.physics.pause();
+    this.sound.play('sfx-win', { volume: 0.8 });
 
     // Calculate stars
     let stars;
@@ -204,14 +215,17 @@ export default class GameScene extends Phaser.Scene {
     const { save } = completeLevelAndSave(localStorage, this.levelNumber, this.wrongAttempts);
     const title = getTitleForXP(save.xp);
 
-    // Brief celebration delay, then transition
+    // Brief celebration delay, then fade transition
     this.time.delayedCall(500, () => {
-      this.scene.start('LevelComplete', {
-        levelNumber: this.levelNumber,
-        stars: stars,
-        xpEarned: xpEarned,
-        totalXP: save.xp,
-        title: title
+      this.cameras.main.fadeOut(300, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start('LevelComplete', {
+          levelNumber: this.levelNumber,
+          stars: stars,
+          xpEarned: xpEarned,
+          totalXP: save.xp,
+          title: title
+        });
       });
     });
   }
