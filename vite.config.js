@@ -1,0 +1,21 @@
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  base: './',
+  build: {
+    outDir: 'dist',
+    assetsInlineLimit: 0
+  },
+  server: {
+    port: 8080
+  },
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.js'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.js'],
+      exclude: ['src/main.js']
+    }
+  }
+});
