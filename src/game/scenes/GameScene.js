@@ -8,6 +8,7 @@ import GoalFlag from '../objects/GoalFlag.js';
 import { completeLevelAndSave } from '../systems/SaveManager.js';
 import { getTitleForXP } from '../systems/TitleSystem.js';
 import { TouchControls } from '../systems/TouchControls.js';
+import { addFullscreenButton } from '../systems/FullscreenButton.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -131,6 +132,9 @@ export default class GameScene extends Phaser.Scene {
     // ── Camera ───────────────────────────────────────
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+
+    // ── Fullscreen Button ──────────────────────────
+    addFullscreenButton(this, 770, 30);
 
     // ── Touch Controls ──────────────────────────────
     this.touchControls = new TouchControls(this);
