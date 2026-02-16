@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { loadSave } from '../systems/SaveManager.js';
 import { getTitleForXP } from '../systems/TitleSystem.js';
+import { addFullscreenButton } from '../systems/FullscreenButton.js';
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -62,6 +63,9 @@ export default class MenuScene extends Phaser.Scene {
       fontFamily: 'Fredoka One',
       color: '#bdc3c7'
     }).setOrigin(0.5);
+
+    // ── Fullscreen Button ────────────────────────
+    addFullscreenButton(this, 40, 30);
 
     // ── Mute Button ──────────────────────────────
     let muted = this.sound.mute;

@@ -24,6 +24,16 @@ body {
   touch-action: none;
 }
 
+/* ── Fullscreen ──────────────────────────────────── */
+
+#game-wrapper:fullscreen {
+  background: #000;
+}
+
+#game-wrapper:-webkit-full-screen {
+  background: #000;
+}
+
 /* ── Math Input Overlay ────────────────────────────── */
 
 #math-input-overlay {

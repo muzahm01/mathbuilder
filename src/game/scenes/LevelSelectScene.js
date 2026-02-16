@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { loadSave } from '../systems/SaveManager.js';
+import { addFullscreenButton } from '../systems/FullscreenButton.js';
 
 export default class LevelSelectScene extends Phaser.Scene {
   constructor() {
@@ -40,6 +41,9 @@ export default class LevelSelectScene extends Phaser.Scene {
 
       this.createLevelButton(x, y, levelNum, isUnlocked, stars);
     }
+
+    // ── Fullscreen Button ────────────────────────
+    addFullscreenButton(this, 40, 30);
 
     // ── Back Button ────────────────────────────────
     const backText = this.add.text(60, height - 40, '< Back', {
