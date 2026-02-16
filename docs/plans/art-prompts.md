@@ -1,8 +1,10 @@
-# Art Prompts for Google Gemini
+# Art Prompts for Google Gemini — Modern 3D Style
 
 All art assets for MathBuilder are generated using Google Gemini's image generation. Each prompt below produces one asset. After generation, crop/resize to the specified dimensions and save as PNG.
 
-**Style keywords to use consistently:** "soft plastic voxel", "vinyl toy", "smooth rounded edges", "vibrant colors", "soft ambient lighting", "kid-friendly", "cartoon"
+**Style keywords to use consistently:** "3D rendered", "clay render", "smooth subsurface scattering", "ambient occlusion", "volumetric lighting", "soft global illumination", "physically-based materials", "modern mobile game art", "Blender 3D render", "kid-friendly", "vibrant saturated colors"
+
+**Art Direction:** Think modern clay/Claymation 3D renders — like *Fall Guys*, *Yoshi's Crafted World*, or *Captain Toad*. Objects should look like high-quality 3D-printed figures with smooth surfaces, soft shadows, subtle ambient occlusion in crevices, and a warm global illumination feel. Materials should feel tactile — matte clay, glossy plastic, brushed wood — not flat or cartoony.
 
 ---
 
@@ -11,13 +13,19 @@ All art assets for MathBuilder are generated using Google Gemini's image generat
 ### Prompt 1 — Grass Top Tile
 
 ```
-Generate a single 2D game tile, exactly 64x64 pixels, top-down isometric view flattened
-for a side-scrolling platformer. The tile shows a grass block: vibrant green grass on
-the top surface, cartoon brown dirt on the side.
+Generate a single 2D game tile for a side-scrolling platformer, rendered in a modern
+3D clay style. The tile shows a grass block: lush green grass on the top surface with
+individual blades of grass that have depth and volume, cartoon brown dirt/earth on the
+side with visible layered sediment and small embedded pebbles.
 
-Style: soft plastic voxel, like a smooth vinyl toy block. Soft ambient lighting, no
-harsh shadows. White background. The left and right edges must be seamless (tileable
-horizontally).
+The grass should look like sculpted clay or felt — thick, dimensional, with subtle
+ambient occlusion where the blades meet the dirt. The dirt should have a warm, baked-
+clay appearance with soft internal shadows showing depth between soil layers.
+
+Style: 3D rendered, clay/Claymation aesthetic, smooth subsurface scattering on the
+grass, ambient occlusion in crevices, soft global illumination, warm lighting from
+upper left. Vibrant saturated colors. White background.
+Left and right edges must be seamless (tileable horizontally).
 ```
 
 **Save to:** `public/assets/images/tiles/grass-top.png`
@@ -27,12 +35,18 @@ horizontally).
 ### Prompt 2 — Dirt Tile
 
 ```
-Generate a single 2D game tile, exactly 64x64 pixels, for a side-scrolling platformer.
-The tile shows a solid dirt/earth block. Warm brown color with subtle horizontal grain
-lines suggesting layers of soil.
+Generate a single 2D game tile for a side-scrolling platformer, rendered in a modern
+3D clay style. The tile shows a solid dirt/earth block with visible layers of compacted
+soil, small embedded stones, and subtle root-like details.
 
-Style: soft plastic voxel, smooth like a toy building block. Soft ambient lighting.
-White background. Seamless on all edges (tileable in all directions).
+The dirt should look like sculpted clay with warm brown tones, subtle depth between
+layers, and ambient occlusion in the crevices. Multiple shades of brown with slight
+color variation for visual interest.
+
+Style: 3D rendered, clay/Claymation aesthetic, ambient occlusion, soft global
+illumination, warm directional lighting. Physically-based materials — matte clay
+surface. White background.
+Seamless on all edges (tileable in all directions).
 ```
 
 **Save to:** `public/assets/images/tiles/dirt.png`
@@ -42,12 +56,18 @@ White background. Seamless on all edges (tileable in all directions).
 ### Prompt 3 — Stone Tile
 
 ```
-Generate a single 2D game tile, exactly 64x64 pixels, for a side-scrolling platformer.
-The tile shows a stone/cobblestone block. Cool grey color with subtle rounded stone
-shapes embedded in it, like a cartoon cobblestone wall.
+Generate a single 2D game tile for a side-scrolling platformer, rendered in a modern
+3D clay style. The tile shows a stone/cobblestone block with rounded, individually
+sculpted stones fitted together with dark mortar gaps between them.
 
-Style: soft plastic voxel, smooth like a toy building block. Soft ambient lighting.
-White background. Seamless on all edges (tileable in all directions).
+Each stone should have subtle surface detail — slight glossy highlights, soft ambient
+occlusion in the gaps between stones, and gentle color variation (cool greys with
+hints of blue and warm undertones). The mortar lines should have deep shadows.
+
+Style: 3D rendered, clay/Claymation aesthetic, physically-based stone material with
+subtle specular highlights, ambient occlusion in crevices, soft global illumination.
+White background.
+Seamless on all edges (tileable in all directions).
 ```
 
 **Save to:** `public/assets/images/tiles/stone.png`
@@ -58,33 +78,35 @@ White background. Seamless on all edges (tileable in all directions).
 
 ### Character Description (use in all Botty prompts)
 
-> Botty is a cute, chunky blue robot. He looks like a high-quality vinyl toy figure.
-> He has: a square head with rounded corners, a rectangular body, stubby cylindrical
-> legs, small rounded arm stubs (no fingers), a small antenna on top of his head, and
-> two friendly glowing dot eyes (like white LEDs). His primary color is a vibrant
-> blue, with lighter blue highlights on his chest panel. Simple shapes, bright primary
-> colors, smooth surfaces.
+> Botty is a cute, chunky blue robot rendered in a modern 3D clay/Claymation style.
+> He looks like a high-end 3D-printed collectible figure. He has: a square head with
+> smooth rounded corners, a rectangular body with a recessed chest panel, stubby
+> cylindrical legs with ball-joint connections, small rounded arm stubs, a small
+> antenna on top with a glowing orb tip, and two friendly glowing LED eyes (soft
+> white glow with slight bloom). His primary color is a rich metallic blue with
+> subtle specular highlights and soft ambient occlusion in joints and recesses.
+> Lighter sky-blue on his chest panel. Materials: glossy plastic body, matte rubber
+> joints, emissive LED eyes and antenna tip. Warm rim lighting from behind.
 
 ---
 
 ### Prompt 4 — Botty Idle Sprite Sheet (4 frames)
 
 ```
-Generate a horizontal sprite sheet for a 2D platformer character. The character is
-"Botty", a cute chunky blue robot that looks like a vinyl toy (see character
-description below).
+Generate a horizontal sprite sheet for a 2D platformer character, rendered in a modern
+3D clay/Claymation style. The character is "Botty", a cute chunky blue robot (see
+character description).
 
-Show 4 frames of a gentle idle breathing animation: the body bobs slightly up and
-down (about 2-3 pixels of movement), the antenna sways slightly. Side view facing
-right.
+Show 4 frames of a gentle idle breathing animation: the body bobs slightly up and down
+(2-3 pixels), the antenna sways gently, the LED eyes have a subtle pulse glow. Side
+view facing right.
 
-Each frame is exactly 64x64 pixels. Total image size: 256x64 pixels (4 frames in
-a single horizontal row, packed edge-to-edge with no spacing).
+Each frame is exactly 64x64 pixels. Total image: 256x64 pixels (4 frames in a single
+horizontal row, packed edge-to-edge with no spacing).
 
-Character: Square head, rectangular body, stubby legs, small antenna, dot eyes.
-Vibrant blue body with lighter chest panel.
-
-Style: soft plastic voxel, vinyl toy, vibrant colors, soft lighting.
+Style: 3D rendered with ambient occlusion at joints, soft subsurface scattering on
+the blue plastic, warm rim lighting from behind-right, subtle specular highlights on
+the glossy body. Physically-based materials.
 Transparent background (PNG).
 ```
 
@@ -96,19 +118,19 @@ Transparent background (PNG).
 ### Prompt 5 — Botty Walk Sprite Sheet (6 frames)
 
 ```
-Generate a horizontal sprite sheet for a 2D platformer character. The character is
-"Botty", a cute chunky blue robot vinyl toy.
+Generate a horizontal sprite sheet for a 2D platformer character, rendered in a modern
+3D clay/Claymation style. The character is "Botty", a cute chunky blue robot.
 
-Show 6 frames of a walk cycle animation: legs alternate stepping forward and back,
-slight arm swing, body has a subtle bounce with each step. Side view facing right.
+Show 6 frames of a walk cycle animation: legs alternate stepping forward and back with
+ball-joint articulation, slight arm swing, body has a bouncy bob with each step, antenna
+bounces. Side view facing right.
 
-Each frame is exactly 64x64 pixels. Total image size: 384x64 pixels (6 frames in
-a single horizontal row, packed edge-to-edge with no spacing).
+Each frame is exactly 64x64 pixels. Total image: 384x64 pixels (6 frames in a single
+horizontal row, packed edge-to-edge with no spacing).
 
-Character: Square head, rectangular body, stubby legs, small antenna, LED dot eyes.
-Vibrant blue body.
-
-Style: soft plastic voxel, vinyl toy, vibrant colors, soft lighting.
+Style: 3D rendered with ambient occlusion at joints, soft subsurface scattering,
+warm rim lighting, specular highlights on glossy blue plastic body. Physically-based
+materials.
 Transparent background (PNG).
 ```
 
@@ -120,22 +142,20 @@ Transparent background (PNG).
 ### Prompt 6 — Botty Jump Sprite Sheet (2 frames)
 
 ```
-Generate a horizontal sprite sheet for a 2D platformer character. The character is
-"Botty", a cute chunky blue robot vinyl toy.
+Generate a horizontal sprite sheet for a 2D platformer character, rendered in a modern
+3D clay/Claymation style. The character is "Botty", a cute chunky blue robot.
 
 Show 2 frames:
-Frame 1 (jump up): Legs tucked up, arms raised slightly, body compact, antenna
-stretched up. Excited pose.
-Frame 2 (falling): Legs dangling down, arms out to the sides for balance, antenna
-drooping slightly. Gentle falling pose.
+Frame 1 (jump up): Legs tucked up, arms raised, body compact, antenna stretched up
+with glowing tip. Excited energetic pose with motion lines implied.
+Frame 2 (falling): Legs dangling, arms out for balance, antenna drooping. Gentle
+falling pose with slight tilt.
 
-Side view facing right. Each frame is exactly 64x64 pixels. Total image size:
-128x64 pixels (2 frames, horizontal row, no spacing).
+Side view facing right. Each frame is exactly 64x64 pixels. Total image: 128x64 pixels
+(2 frames, horizontal row, no spacing).
 
-Character: Square head, rectangular body, stubby legs, antenna, LED dot eyes.
-Vibrant blue body.
-
-Style: soft plastic voxel, vinyl toy, vibrant colors, soft lighting.
+Style: 3D rendered with ambient occlusion, subsurface scattering, warm rim lighting,
+specular highlights. Physically-based glossy plastic materials.
 Transparent background (PNG).
 ```
 
@@ -149,14 +169,17 @@ Transparent background (PNG).
 ### Prompt 7 — Sky Gradient
 
 ```
-Generate a 2D game background, exactly 800x600 pixels. A smooth vertical gradient
-sky: bright cerulean blue (#87CEEB) at the top, gradually transitioning to a warm
-pale blue-white (#E0F0FF) at the bottom.
+Generate a 2D game background, exactly 800x600 pixels. A rich atmospheric sky with
+depth and dimension: deep cerulean blue (#2E86C1) at the top gradually transitioning
+through warm sky blue to a soft peachy-golden horizon (#FDEBD0) at the bottom.
 
-No clouds, no sun, no objects — just the clean smooth gradient. This will serve as
-the base background layer for a kids' platformer game.
+Add very subtle atmospheric haze layers and gentle volumetric light rays coming from
+the upper-right corner for a warm, magical feeling. No clouds, no sun, no objects —
+just the atmospheric gradient with subtle light effects.
 
-Style: soft, warm, kid-friendly color palette. No noise or texture, just smooth color.
+Style: 3D rendered sky dome, volumetric atmosphere, warm global illumination, modern
+mobile game background quality. Smooth gradients with subtle noise for richness.
+Kid-friendly, inviting, warm palette.
 ```
 
 **Save to:** `public/assets/images/backgrounds/sky.png`
@@ -169,14 +192,16 @@ Style: soft, warm, kid-friendly color palette. No noise or texture, just smooth 
 ```
 Generate a 2D parallax layer for a platformer game, exactly 800x200 pixels.
 
-Several fluffy, rounded white cartoon clouds scattered across the image at various
-heights. The clouds look like soft cotton balls or marshmallow shapes with very
-gentle grey shadows on the bottom. 3-5 clouds of different sizes.
+Several fluffy, volumetric 3D clouds with realistic depth: soft rounded shapes with
+subtle self-shadowing on the bottom, bright highlights on top where the sun hits,
+and gentle translucent edges. 3-5 clouds of different sizes scattered at various
+heights. The clouds should look like sculpted cotton or soft clay.
 
-The image must be seamless when tiled horizontally (the left edge connects to the
-right edge). Transparent background (PNG) — only the clouds are visible.
+The image must be seamless when tiled horizontally. Transparent background (PNG).
 
-Style: soft plastic, kid-friendly, gentle lighting, cartoon clouds.
+Style: 3D rendered clouds with subsurface scattering, volumetric lighting from upper
+right, ambient occlusion on undersides. Modern mobile game quality, soft and dreamy.
+Kid-friendly.
 ```
 
 **Save to:** `public/assets/images/backgrounds/clouds.png`
@@ -189,15 +214,18 @@ Style: soft plastic, kid-friendly, gentle lighting, cartoon clouds.
 ```
 Generate a 2D parallax layer for a platformer game, exactly 800x200 pixels.
 
-Rolling green hills filling the bottom portion of the image. The hills have gentle,
-smooth curves like a toy landscape. Multiple overlapping hill shapes in slightly
-different shades of green (lighter in front, darker behind) to create depth.
+Rolling green hills with depth and dimension, filling the bottom portion. Multiple
+overlapping hill layers with parallax depth: lighter vibrant green hills in front,
+deeper green hills behind. Each hill has gentle 3D shading — soft highlight on top
+where the light hits, ambient occlusion at the base where hills overlap.
 
-The image must be seamless when tiled horizontally. Transparent background (PNG)
-above the hills — only the hills are visible.
+Small details: subtle grass tufts on hilltops, tiny wildflowers dots of color (yellow,
+pink). The hills should look like a sculpted clay landscape diorama.
 
-Style: soft plastic voxel, like a vinyl toy playset landscape. Vibrant greens with
-soft lighting. Kid-friendly.
+Seamless when tiled horizontally. Transparent background (PNG) above the hills.
+
+Style: 3D rendered, clay/diorama aesthetic, soft global illumination, warm afternoon
+light, ambient occlusion. Vibrant greens with warm undertones. Kid-friendly.
 ```
 
 **Save to:** `public/assets/images/backgrounds/hills.png`
@@ -210,16 +238,21 @@ soft lighting. Kid-friendly.
 ### Prompt 10 — Play Button
 
 ```
-Generate a single 2D game UI button, approximately 200x70 pixels.
+Generate a single 2D game UI button, approximately 200x70 pixels, rendered in a modern
+3D style.
 
-A glossy green button with the text "PLAY" in bold white letters. The button has:
-- Rounded corners (pill shape)
-- Subtle 3D bevel/gradient (lighter on top, darker on bottom)
-- Slight drop shadow underneath
-- The "PLAY" text has a small text shadow for depth
+A glossy green button with the text "PLAY" in bold white 3D-extruded letters. The button
+has:
+- Pill/capsule shape with smooth rounded edges
+- Full 3D depth: visible thickness/extrusion on the bottom and right edges
+- Glossy top surface with a bright specular highlight streak
+- Subtle environment reflection on the glossy surface
+- Soft drop shadow with slight blur underneath
+- The text has 3D extrusion/bevel and a subtle inner glow
 
-Style: candy-like, glossy, bubbly, kid-friendly game UI. Think "Candy Crush" or
-"Cut the Rope" button style. White background (or transparent PNG).
+Style: modern mobile game UI, 3D rendered button like a physical candy or jelly piece.
+Glossy PBR materials, warm lighting. Looks like you could pick it up and press it.
+White background (or transparent PNG).
 ```
 
 **Save to:** `public/assets/images/ui/btn-play.png`
@@ -230,16 +263,19 @@ Style: candy-like, glossy, bubbly, kid-friendly game UI. Think "Candy Crush" or
 ### Prompt 11 — Levels Button
 
 ```
-Generate a single 2D game UI button, approximately 200x70 pixels.
+Generate a single 2D game UI button, approximately 200x70 pixels, rendered in a modern
+3D style.
 
-A glossy blue button with the text "LEVELS" in bold white letters. Same style as:
-- Rounded corners (pill shape)
-- 3D bevel/gradient
+A glossy blue button with the text "LEVELS" in bold white 3D-extruded letters. Same
+3D style as the Play button:
+- Pill shape with visible 3D thickness/extrusion
+- Glossy surface with specular highlight
+- Environment reflection
 - Drop shadow
-- Text shadow
+- 3D text with bevel
 
-Style: candy-like, glossy, kid-friendly. Matches the green Play button but in blue.
-White background (or transparent PNG).
+Style: modern mobile game UI, 3D rendered, PBR glossy materials. Matches the green
+Play button but in vibrant blue. White background (or transparent PNG).
 ```
 
 **Save to:** `public/assets/images/ui/btn-levels.png`
@@ -250,24 +286,24 @@ White background (or transparent PNG).
 ### Prompt 12 — Star Icons (Filled and Empty)
 
 ```
-Generate two 2D game UI icons side by side on the same image:
+Generate two 2D game UI star icons side by side:
 
-Left star: A filled, glossy GOLD star (like a reward/achievement star).
-Has a bright highlight/shine spot in the upper left. Rich gold/yellow color.
+Left star: A filled, glossy GOLD 3D star (reward/achievement star). Rendered as a
+3D object with visible thickness, bright specular highlights, warm golden reflections,
+and a small lens flare/sparkle on one point. Rich gold metallic PBR material.
 Size: 32x32 pixels.
 
-Right star: An EMPTY grey star outline with the same shape and size.
-Grey/silver color, slightly 3D with a subtle shadow.
-Size: 32x32 pixels.
+Right star: An EMPTY grey 3D star outline with the same 3D shape. Brushed silver/grey
+metallic material with subtle specular highlights but more muted than the gold star.
+Slight inner bevel. Size: 32x32 pixels.
 
-Spacing: Leave a few pixels gap between the two stars.
-Total image: approximately 72x32 pixels.
+Leave a few pixels gap between them. Total: ~72x32 pixels.
 
-Style: candy-like, rounded corners on star points (not sharp), glossy, kid-friendly.
-White background.
+Style: 3D rendered, metallic PBR materials, warm lighting from upper-left, soft ambient
+occlusion. Modern mobile game quality. White background.
 ```
 
-**Save to:** Crop into two separate files:
+**Save to:** Crop into two files:
 - `public/assets/images/ui/star-filled.png` (32x32)
 - `public/assets/images/ui/star-empty.png` (32x32)
 
@@ -276,19 +312,21 @@ White background.
 ### Prompt 13 — Math Input Panel Background
 
 ```
-Generate a 2D UI panel for a kids' math game, approximately 400x250 pixels.
+Generate a 2D UI panel for a kids' math game, approximately 400x250 pixels, rendered
+in a modern 3D style.
 
-A rounded rectangle panel that looks like a toy tablet or clipboard:
-- Soft blue-grey background (#E8F0FE or similar)
-- Thick rounded border in a darker blue (#4A90D9)
-- Rounded corners (20px radius feel)
-- Gentle drop shadow
-- A white rectangular area in the center (where the number input will go)
-- Space at the top for a question text
-- Space at the bottom for a button
+A rounded rectangle panel that looks like a 3D tablet or clipboard floating in space:
+- Soft blue-gradient background with glass-morphism effect (frosted glass feel)
+- Thick rounded border with 3D depth/thickness visible on bottom and right edges
+- Smooth rounded corners (20px radius)
+- Realistic soft drop shadow with subtle blur
+- A white recessed input area in the center (sunken/inset 3D effect)
+- Subtle inner glow around the panel edges
+- Space at top for question text, space at bottom for button
 
-Style: soft plastic, toy-like, kid-friendly, candy UI. Like a popup dialog from a
-children's educational app. White background around the panel (or transparent PNG).
+Style: modern mobile game UI, 3D rendered panel, glass-morphism with PBR materials.
+Warm lighting, soft ambient occlusion at edges. Like a physical toy tablet.
+Transparent background (PNG).
 ```
 
 **Save to:** `public/assets/images/ui/math-input-bg.png`
@@ -299,24 +337,26 @@ children's educational app. White background around the panel (or transparent PN
 ### Prompt 14 — Touch Control Arrows
 
 ```
-Generate three 2D game UI buttons for mobile/tablet touch screen controls, arranged
-in a horizontal row:
+Generate three 2D game UI buttons for mobile touch controls, arranged horizontally:
 
-Button 1 (LEFT): A circular button (64x64 pixels) with a left-pointing arrow (◀).
-Button 2 (RIGHT): A circular button (64x64 pixels) with a right-pointing arrow (▶).
-Button 3 (JUMP): A circular button (64x64 pixels) with an up-pointing arrow (▲).
+Button 1 (LEFT): A circular button (64x64) with a left-pointing arrow (◀).
+Button 2 (RIGHT): A circular button (64x64) with a right-pointing arrow (▶).
+Button 3 (JUMP): A circular button (64x64) with an up-pointing arrow (▲).
 
 Each button has:
-- Dark semi-transparent background (like frosted glass)
-- White arrow icon, bold and thick
-- Subtle border ring
-- Looks like a modern mobile game D-pad button
+- Glass-morphism/frosted glass appearance with depth
+- Semi-transparent dark background with subtle blur effect
+- Bright white arrow icon with 3D bevel/extrusion
+- Soft glowing ring around the edge (subtle neon-like)
+- Subtle specular highlight on the glass surface
+- Looks like a modern mobile game's virtual joystick buttons
 
-Transparent background (PNG). Style: clean, minimal, semi-transparent, professional
-mobile game controls.
+Transparent background (PNG).
+Style: modern mobile game UI, glass-morphism, 3D rendered controls with depth,
+soft glow effects, clean and professional.
 ```
 
-**Save to:** Crop into three separate files:
+**Save to:** Crop into three files:
 - `public/assets/images/ui/arrow-left.png` (64x64)
 - `public/assets/images/ui/arrow-right.png` (64x64)
 - `public/assets/images/ui/arrow-jump.png` (64x64)
@@ -328,17 +368,19 @@ mobile game controls.
 ### Prompt 15 — Goal Flag
 
 ```
-Generate a 2D game sprite, exactly 64x64 pixels.
+Generate a 2D game sprite, exactly 64x64 pixels, rendered in modern 3D clay style.
 
-A checkered race/finish flag on a thin pole:
-- The flag is a small rectangle with a red and white checkered pattern
-- It's waving slightly (not stiff, has a gentle curve)
-- The pole is thin, dark grey/brown, goes from bottom to top of the sprite
-- The flag is attached at the top of the pole
+A checkered race/finish flag on a thin metallic pole:
+- The flag is a small rectangle with red and white checkered pattern, 3D cloth
+  simulation look with gentle waving folds and self-shadowing
+- The pole is thin brushed metal (chrome/silver), goes from bottom to top
+- The flag is attached at the top, waving to the right
+- Small circular metal base at the bottom
 
-Style: soft plastic voxel, toy-like, vibrant red and white colors.
-Transparent background (PNG). The pole base should be at the bottom of the 64x64
-frame.
+Style: 3D rendered, clay/Claymation aesthetic. PBR materials: glossy fabric for the
+flag with subsurface scattering, brushed metal for the pole. Ambient occlusion,
+soft global illumination, warm lighting.
+Transparent background (PNG). Pole base at bottom of 64x64 frame.
 ```
 
 **Save to:** `public/assets/images/objects/flag.png`
@@ -349,16 +391,20 @@ frame.
 ### Prompt 16 — Bridge Block
 
 ```
-Generate a single 2D game tile, exactly 64x64 pixels, for a side-scrolling platformer.
+Generate a single 2D game tile, exactly 64x64 pixels, for a side-scrolling platformer,
+rendered in modern 3D clay style.
 
 The tile shows a wooden plank/bridge block:
-- Warm wood brown color (#8B6914 or similar)
-- Visible horizontal plank lines (2-3 planks stacked)
-- Slightly different style from ground/earth tiles — this looks BUILT, not natural
-- Like wooden planks nailed together
+- Warm honey-oak wood with visible 3D wood grain texture
+- 2-3 planks stacked horizontally with visible gaps between them
+- Iron/metal nail heads or bolts at the corners (small shiny details)
+- Subtle ambient occlusion between the planks
+- Slight worn/weathered edges for character
 
-Style: soft plastic voxel, smooth like a toy building block. Soft lighting.
-White background. Seamless on left and right edges (tileable horizontally).
+Style: 3D rendered, clay/Claymation aesthetic, PBR wood material with subtle specular
+highlights, ambient occlusion in plank gaps, warm directional lighting. Looks built
+and crafted, distinctly different from natural ground tiles.
+White background. Seamless on left and right edges.
 ```
 
 **Save to:** `public/assets/images/objects/bridge-block.png`
@@ -371,15 +417,16 @@ White background. Seamless on left and right edges (tileable horizontally).
 ### Prompt 17 — Dust Particle
 
 ```
-Generate a tiny 2D particle sprite, exactly 8x8 pixels (you may generate it larger
-and I will resize).
+Generate a small 2D particle sprite (generate at 64x64, will be resized to 8x8).
 
-A small, soft dust puff:
-- Tan/beige/light brown color
-- Circular shape with soft/fuzzy edges fading to transparency
-- Looks like a tiny cloud of dust
+A soft dust puff with 3D volume:
+- Warm tan/beige color with subtle internal color variation
+- Soft, volumetric shape — like a tiny 3D-rendered smoke puff
+- Smooth falloff edges fading to full transparency
+- Subtle internal highlight suggesting light passing through
 
-Simple, minimal. Transparent background (PNG).
+Style: 3D rendered particle with subsurface scattering, soft volumetric look.
+Transparent background (PNG).
 ```
 
 **Save to:** `public/assets/images/particles/dust.png`
@@ -390,18 +437,16 @@ Simple, minimal. Transparent background (PNG).
 ### Prompt 18 — Confetti Particle
 
 ```
-Generate a tiny 2D particle sprite, exactly 8x8 pixels (you may generate it larger
-and I will resize).
+Generate a small 2D particle sprite (generate at 64x64, will be resized to 8x8).
 
-A small square confetti piece:
-- Bright white or light yellow color
-- Simple flat square/rectangle shape with slightly rounded corners
-- Minimal detail
+A single confetti piece with 3D depth:
+- White/light yellow base color (will be tinted at runtime)
+- Small square/rectangle shape with slightly rounded corners
+- Subtle 3D thickness visible (like a tiny piece of paper in perspective)
+- Tiny specular highlight on one face
 
-Note: This will be tinted different colors at runtime by the game engine, so a
-neutral white/yellow base works best.
-
-Simple, minimal. Transparent background (PNG).
+Style: 3D rendered with physically-based material, soft lighting. Simple and minimal.
+Transparent background (PNG).
 ```
 
 **Save to:** `public/assets/images/particles/confetti.png`
@@ -409,16 +454,18 @@ Simple, minimal. Transparent background (PNG).
 
 ---
 
-## Tips for Better Gemini Results
+## Tips for Better Gemini Results (Modern 3D Style)
 
-1. **If results are too realistic:** Add "cartoon style, flat shading, no photorealism" to the prompt
-2. **If results have wrong dimensions:** Generate at any size and manually resize in an image editor. The exact pixel dimensions matter for Phaser's spritesheet parser.
-3. **If sprite sheets have inconsistent frames:** Generate each frame separately and stitch them together horizontally in an image editor
-4. **If tiles aren't seamless:** Generate a 2x1 tile version and crop the center 64x64 — the seam will be in the middle where it's seamless
-5. **If backgrounds have unwanted objects:** Specify "no objects, no characters, no text" in the prompt
-6. **For transparency:** Always request "transparent background (PNG)". If Gemini returns a white background, use an image editor's magic wand/background removal tool.
-7. **Batch processing:** Generate all tiles in one session, all Botty sprites in another, etc. This helps maintain style consistency within each category.
-8. **Regenerate variations:** For each prompt, generate 3-4 variations and pick the best one. Gemini outputs vary significantly between runs.
+1. **Key style anchor phrase:** Always include "3D rendered, clay/Claymation style, ambient occlusion, PBR materials" in every prompt for consistency
+2. **If results look too flat:** Add "volumetric lighting, subsurface scattering, specular highlights, depth of field"
+3. **If results are too realistic/scary:** Add "kid-friendly, soft colors, rounded edges, cute proportions, warm lighting"
+4. **If results have wrong dimensions:** Generate at any size and resize. Consider generating at 2x resolution and downscaling for crispness.
+5. **For sprite sheets:** Generate each frame separately with identical camera angle and lighting, then stitch horizontally
+6. **For tiles:** Add "seamless, tileable" and generate a 2x2 grid, then crop one tile from the center
+7. **For transparency:** Always request "transparent background (PNG)". Use background removal if Gemini returns solid backgrounds.
+8. **Batch by category:** Generate all tiles in one session for style consistency, then all Botty sprites, etc.
+9. **Lighting consistency:** All assets should use warm directional lighting from the upper-left for cohesive look
+10. **Reference images:** Include references to games like Fall Guys, Yoshi's Crafted World, or Captain Toad for the desired 3D aesthetic
 
 ---
 
