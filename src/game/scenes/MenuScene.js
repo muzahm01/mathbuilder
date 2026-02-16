@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { loadSave } from '../systems/SaveManager.js';
 import { getTitleForXP } from '../systems/TitleSystem.js';
 import { addFullscreenButton } from '../systems/FullscreenButton.js';
+import { FXManager } from '../systems/FXManager.js';
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -23,6 +24,11 @@ export default class MenuScene extends Phaser.Scene {
       strokeThickness: 8
     }).setOrigin(0.5);
 
+    // 3D effects on title: shine sweep + golden glow
+    FXManager.addShine(title, { speed: 0.3, lineWidth: 0.5, gradient: 3 });
+    FXManager.addGlow(title, { color: 0xf39c12, outerStrength: 3, quality: 0.1, distance: 12 });
+    FXManager.addShadow(title, { x: 4, y: 4, intensity: 0.5 });
+
     // Gentle floating animation
     this.tweens.add({
       targets: title,
@@ -38,12 +44,29 @@ export default class MenuScene extends Phaser.Scene {
     botty.play('botty-idle');
     botty.setScale(2);
 
+    // 3D effects on Botty: shadow + subtle glow
+    FXManager.addShadow(botty, { x: 4, y: 5, intensity: 0.5 });
+    FXManager.addGlow(botty, { color: 0x66ccff, outerStrength: 2, quality: 0.1, distance: 10 });
+
     // ── Play Button ────────────────────────────────
     const playBtn = this.add.image(width / 2, 420, 'btn-play')
       .setInteractive({ useHandCursor: true });
 
-    playBtn.on('pointerover', () => playBtn.setScale(1.1));
-    playBtn.on('pointerout', () => playBtn.setScale(1));
+    // 3D effects on button: shadow + glow on hover
+    FXManager.addShadow(playBtn, { x: 3, y: 3, intensity: 0.5 });
+    FXManager.addShine(playBtn, { speed: 0.4, lineWidth: 0.3, gradient: 4 });
+    const playGlow = FXManager.addGlow(playBtn, {
+      color: 0x27ae60, outerStrength: 0, quality: 0.1, distance: 10
+    });
+
+    playBtn.on('pointerover', () => {
+      playBtn.setScale(1.1);
+      if (playGlow) playGlow.outerStrength = 4;
+    });
+    playBtn.on('pointerout', () => {
+      playBtn.setScale(1);
+      if (playGlow) playGlow.outerStrength = 0;
+    });
     playBtn.on('pointerdown', () => {
       this.scene.start('LevelSelect');
     });
@@ -78,5 +101,8 @@ export default class MenuScene extends Phaser.Scene {
       this.sound.mute = muted;
       muteBtn.setText(muted ? '🔇' : '🔊');
     });
+
+    // ── Camera bloom for warm overall look ──────────
+    FXManager.addCameraBloom(this.cameras.main, { strength: 0.3, blurStrength: 0.8 });
   }
 }

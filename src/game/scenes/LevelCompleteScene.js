@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ParticleManager } from '../systems/ParticleManager.js';
+import { FXManager } from '../systems/FXManager.js';
 
 export default class LevelCompleteScene extends Phaser.Scene {
   constructor() {
@@ -35,6 +36,11 @@ export default class LevelCompleteScene extends Phaser.Scene {
       strokeThickness: 6
     }).setOrigin(0.5).setScale(0);
 
+    // 3D effects on header: shine + glow + shadow
+    FXManager.addShine(header, { speed: 0.4, lineWidth: 0.5, gradient: 3 });
+    FXManager.addGlow(header, { color: 0xf1c40f, outerStrength: 4, quality: 0.1, distance: 12 });
+    FXManager.addShadow(header, { x: 4, y: 4, intensity: 0.5 });
+
     this.tweens.add({
       targets: header,
       scale: 1,
@@ -56,6 +62,13 @@ export default class LevelCompleteScene extends Phaser.Scene {
         starY,
         starKey
       ).setScale(0);
+
+      // Filled stars get a golden glow + shine
+      if (isFilled) {
+        FXManager.addGlow(star, { color: 0xf1c40f, outerStrength: 5, quality: 0.1, distance: 10 });
+        FXManager.addShine(star, { speed: 0.5, lineWidth: 0.4, gradient: 3 });
+      }
+      FXManager.addShadow(star, { x: 2, y: 2, intensity: 0.4 });
 
       this.tweens.add({
         targets: star,
@@ -115,6 +128,13 @@ export default class LevelCompleteScene extends Phaser.Scene {
         .setAlpha(0)
         .setInteractive({ useHandCursor: true });
 
+      // 3D effects on Next button
+      FXManager.addShadow(nextBtnBg, { x: 3, y: 3, intensity: 0.5 });
+      FXManager.addShine(nextBtnBg, { speed: 0.3, lineWidth: 0.3, gradient: 4 });
+      const nextGlow = FXManager.addGlow(nextBtnBg, {
+        color: 0x27ae60, outerStrength: 0, quality: 0.1, distance: 8
+      });
+
       const nextBtnText = this.add.text(width / 2, 460, 'Next Level >', {
         fontSize: '26px',
         fontFamily: 'Fredoka One',
@@ -131,10 +151,12 @@ export default class LevelCompleteScene extends Phaser.Scene {
       nextBtnBg.on('pointerover', () => {
         nextBtnBg.setScale(1.1);
         nextBtnText.setScale(1.1);
+        if (nextGlow) nextGlow.outerStrength = 4;
       });
       nextBtnBg.on('pointerout', () => {
         nextBtnBg.setScale(1);
         nextBtnText.setScale(1);
+        if (nextGlow) nextGlow.outerStrength = 0;
       });
       nextBtnBg.on('pointerdown', () => {
         this.scene.start('Game', { levelNumber: this.levelNumber + 1 });
@@ -146,6 +168,12 @@ export default class LevelCompleteScene extends Phaser.Scene {
       .setStrokeStyle(2, 0x2c3e50)
       .setAlpha(0)
       .setInteractive({ useHandCursor: true });
+
+    // 3D effects on Select button
+    FXManager.addShadow(selectBtnBg, { x: 2, y: 2, intensity: 0.4 });
+    const selectGlow = FXManager.addGlow(selectBtnBg, {
+      color: 0x34495e, outerStrength: 0, quality: 0.1, distance: 8
+    });
 
     const selectBtnText = this.add.text(width / 2, 520, 'Level Select', {
       fontSize: '20px',
@@ -163,13 +191,18 @@ export default class LevelCompleteScene extends Phaser.Scene {
     selectBtnBg.on('pointerover', () => {
       selectBtnBg.setScale(1.1);
       selectBtnText.setScale(1.1);
+      if (selectGlow) selectGlow.outerStrength = 3;
     });
     selectBtnBg.on('pointerout', () => {
       selectBtnBg.setScale(1);
       selectBtnText.setScale(1);
+      if (selectGlow) selectGlow.outerStrength = 0;
     });
     selectBtnBg.on('pointerdown', () => {
       this.scene.start('LevelSelect');
     });
+
+    // ── Camera bloom for warm overall look ──────────
+    FXManager.addCameraBloom(this.cameras.main, { strength: 0.3, blurStrength: 0.8 });
   }
 }

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { TILE_SIZE, gridToPixel } from '../systems/GridSystem.js';
+import { FXManager } from '../systems/FXManager.js';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, gridX, gridY) {
@@ -14,6 +15,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setBounce(0.1);
     this.body.setSize(TILE_SIZE - 8, TILE_SIZE - 4);
     this.body.setOffset(4, 4);
+
+    // 3D effects: shadow for depth + subtle glow highlight
+    FXManager.addShadow(this, { x: 3, y: 4, intensity: 0.5 });
+    FXManager.addGlow(this, { color: 0x66ccff, outerStrength: 1.5, quality: 0.1, distance: 8 });
 
     // Movement constants
     this.MOVE_SPEED = 200;

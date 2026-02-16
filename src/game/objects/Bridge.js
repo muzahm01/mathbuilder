@@ -1,5 +1,6 @@
 import { TILE_SIZE, gridToPixel } from '../systems/GridSystem.js';
 import { ParticleManager } from '../systems/ParticleManager.js';
+import { FXManager } from '../systems/FXManager.js';
 
 /**
  * Build a bridge of N blocks at the gap position.
@@ -18,6 +19,10 @@ export function buildBridge(scene, gapData, platformGroup) {
     );
     block.setSize(TILE_SIZE, TILE_SIZE);
     block.refreshBody();
+
+    // 3D effects: shine + shadow on each bridge block
+    FXManager.addShine(block, { speed: 0.5, lineWidth: 0.4, gradient: 3 });
+    FXManager.addShadow(block, { x: 2, y: 2, intensity: 0.4 });
 
     // Pop-in animation for each block
     block.setScale(0);
