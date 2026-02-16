@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { loadSave } from '../systems/SaveManager.js';
 import { addFullscreenButton } from '../systems/FullscreenButton.js';
+import { FXManager } from '../systems/FXManager.js';
 
 export default class LevelSelectScene extends Phaser.Scene {
   constructor() {
@@ -15,13 +16,17 @@ export default class LevelSelectScene extends Phaser.Scene {
     this.add.image(width / 2, height / 2, 'sky');
 
     // ── Header ─────────────────────────────────────
-    this.add.text(width / 2, 50, 'World 1: Grasslands', {
+    const header = this.add.text(width / 2, 50, 'World 1: Grasslands', {
       fontSize: '32px',
       fontFamily: 'Fredoka One',
       color: '#ffffff',
       stroke: '#2c3e50',
       strokeThickness: 4
     }).setOrigin(0.5);
+
+    // 3D effects on header
+    FXManager.addShine(header, { speed: 0.25, lineWidth: 0.4, gradient: 3 });
+    FXManager.addShadow(header, { x: 3, y: 3, intensity: 0.4 });
 
     // ── Level Grid (5 columns x 2 rows) ────────────
     const startX = 120;
@@ -53,17 +58,34 @@ export default class LevelSelectScene extends Phaser.Scene {
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
     backText.on('pointerdown', () => this.scene.start('Menu'));
+
+    // ── Camera bloom for warm overall look ──────────
+    FXManager.addCameraBloom(this.cameras.main, { strength: 0.25, blurStrength: 0.8 });
   }
 
   createLevelButton(x, y, levelNum, isUnlocked, stars) {
     const bg = this.add.rectangle(x, y, 100, 100, isUnlocked ? 0x3498db : 0x7f8c8d)
       .setStrokeStyle(3, isUnlocked ? 0x2980b9 : 0x636e72);
 
+    // 3D shadow on all level buttons
+    FXManager.addShadow(bg, { x: 3, y: 3, intensity: isUnlocked ? 0.5 : 0.3 });
+
     if (isUnlocked) {
       bg.setInteractive({ useHandCursor: true });
 
-      bg.on('pointerover', () => bg.setScale(1.1));
-      bg.on('pointerout', () => bg.setScale(1));
+      // Glow that activates on hover
+      const btnGlow = FXManager.addGlow(bg, {
+        color: 0x3498db, outerStrength: 0, quality: 0.1, distance: 8
+      });
+
+      bg.on('pointerover', () => {
+        bg.setScale(1.1);
+        if (btnGlow) btnGlow.outerStrength = 4;
+      });
+      bg.on('pointerout', () => {
+        bg.setScale(1);
+        if (btnGlow) btnGlow.outerStrength = 0;
+      });
       bg.on('pointerdown', () => {
         this.scene.start('Game', { levelNumber: levelNum });
       });
@@ -81,11 +103,16 @@ export default class LevelSelectScene extends Phaser.Scene {
     if (isUnlocked) {
       for (let s = 0; s < 3; s++) {
         const starKey = s < stars ? 'star-filled' : 'star-empty';
-        this.add.image(
+        const starImg = this.add.image(
           x - 24 + s * 24,
           y + 30,
           starKey
         ).setScale(0.7);
+
+        // Filled stars get a golden glow
+        if (s < stars) {
+          FXManager.addGlow(starImg, { color: 0xf1c40f, outerStrength: 3, quality: 0.1, distance: 6 });
+        }
       }
     } else {
       this.add.text(x, y + 25, 'LOCKED', {

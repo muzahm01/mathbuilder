@@ -9,6 +9,7 @@ import { completeLevelAndSave } from '../systems/SaveManager.js';
 import { getTitleForXP } from '../systems/TitleSystem.js';
 import { TouchControls } from '../systems/TouchControls.js';
 import { addFullscreenButton } from '../systems/FullscreenButton.js';
+import { FXManager } from '../systems/FXManager.js';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -153,6 +154,10 @@ export default class GameScene extends Phaser.Scene {
 
     // ── Store level data for later reference ─────────
     this.levelData = levelData;
+
+    // ── 3D Visual Effects ────────────────────────────────
+    // Subtle camera bloom for warm, soft overall look
+    FXManager.addCameraBloom(this.cameras.main, { strength: 0.25, blurStrength: 0.8 });
 
     // ── Fade in ───────────────────────────────────────
     this.cameras.main.fadeIn(300, 0, 0, 0);
