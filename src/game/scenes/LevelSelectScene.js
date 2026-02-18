@@ -50,17 +50,27 @@ export default class LevelSelectScene extends Phaser.Scene {
     // ── Fullscreen Button ────────────────────────
     addFullscreenButton(this, 40, 30);
 
-    // ── Back Button ────────────────────────────────
-    const backText = this.add.text(60, height - 40, '< Back', {
+    // ── Back Button (large touch target for children) ──
+    const backBg = this.add.rectangle(80, height - 45, 120, 44, 0x34495e)
+      .setStrokeStyle(2, 0x2c3e50)
+      .setInteractive({ useHandCursor: true });
+
+    const backText = this.add.text(80, height - 45, '< Back', {
       fontSize: '20px',
       fontFamily: 'Fredoka One',
       color: '#ffffff'
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    }).setOrigin(0.5);
 
-    backText.on('pointerdown', () => this.scene.start('Menu'));
+    backBg.on('pointerover', () => {
+      backBg.setScale(1.1);
+      backText.setScale(1.1);
+    });
+    backBg.on('pointerout', () => {
+      backBg.setScale(1);
+      backText.setScale(1);
+    });
+    backBg.on('pointerdown', () => this.scene.start('Menu'));
 
-    // ── Camera bloom for warm overall look ──────────
-    FXManager.addCameraBloom(this.cameras.main, { strength: 0.25, blurStrength: 0.8 });
   }
 
   createLevelButton(x, y, levelNum, isUnlocked, stars) {

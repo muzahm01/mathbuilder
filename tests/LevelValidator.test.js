@@ -3,16 +3,17 @@ import { validateLevel } from '../src/game/systems/LevelValidator.js';
 
 const VALID_LEVEL = {
   name: 'Test Level',
-  width: 15,
+  gridWidth: 25,
+  gridHeight: 9,
   platforms: [
-    { x: 0, y: 8, width: 5, tile: 'grass-top' },
-    { x: 8, y: 8, width: 7, tile: 'grass-top' }
+    { gridX: 0, gridY: 8, width: 5, tile: 'grass-top' },
+    { gridX: 8, gridY: 8, width: 7, tile: 'grass-top' }
   ],
   gaps: [
-    { x: 5, y: 8, width: 3, answer: 3 }
+    { gridX: 5, gridY: 8, width: 3, correctAnswer: 3 }
   ],
-  player: { x: 1, y: 7 },
-  goal: { x: 14, y: 7 }
+  start: { gridX: 1, gridY: 7 },
+  goal: { gridX: 14, gridY: 7 }
 };
 
 describe('LevelValidator', () => {
@@ -47,21 +48,35 @@ describe('LevelValidator', () => {
     });
   });
 
-  describe('width validation', () => {
-    it('rejects missing width', () => {
+  describe('gridWidth validation', () => {
+    it('rejects missing gridWidth', () => {
       const level = { ...VALID_LEVEL };
-      delete level.width;
+      delete level.gridWidth;
       const result = validateLevel(level);
       expect(result.valid).toBe(false);
     });
 
-    it('rejects non-integer width', () => {
-      const result = validateLevel({ ...VALID_LEVEL, width: 15.5 });
+    it('rejects non-integer gridWidth', () => {
+      const result = validateLevel({ ...VALID_LEVEL, gridWidth: 15.5 });
       expect(result.valid).toBe(false);
     });
 
-    it('rejects zero width', () => {
-      const result = validateLevel({ ...VALID_LEVEL, width: 0 });
+    it('rejects zero gridWidth', () => {
+      const result = validateLevel({ ...VALID_LEVEL, gridWidth: 0 });
+      expect(result.valid).toBe(false);
+    });
+  });
+
+  describe('gridHeight validation', () => {
+    it('rejects missing gridHeight', () => {
+      const level = { ...VALID_LEVEL };
+      delete level.gridHeight;
+      const result = validateLevel(level);
+      expect(result.valid).toBe(false);
+    });
+
+    it('rejects non-integer gridHeight', () => {
+      const result = validateLevel({ ...VALID_LEVEL, gridHeight: 9.5 });
       expect(result.valid).toBe(false);
     });
   });
@@ -72,10 +87,10 @@ describe('LevelValidator', () => {
       expect(result.valid).toBe(false);
     });
 
-    it('rejects platform with missing x', () => {
+    it('rejects platform with missing gridX', () => {
       const result = validateLevel({
         ...VALID_LEVEL,
-        platforms: [{ y: 8, width: 5, tile: 'grass-top' }]
+        platforms: [{ gridY: 8, width: 5, tile: 'grass-top' }]
       });
       expect(result.valid).toBe(false);
     });
@@ -83,7 +98,7 @@ describe('LevelValidator', () => {
     it('rejects platform with missing tile', () => {
       const result = validateLevel({
         ...VALID_LEVEL,
-        platforms: [{ x: 0, y: 8, width: 5 }]
+        platforms: [{ gridX: 0, gridY: 8, width: 5 }]
       });
       expect(result.valid).toBe(false);
     });
@@ -95,10 +110,10 @@ describe('LevelValidator', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('rejects gap with mismatched answer and width', () => {
+    it('rejects gap with mismatched correctAnswer and width', () => {
       const result = validateLevel({
         ...VALID_LEVEL,
-        gaps: [{ x: 5, y: 8, width: 3, answer: 5 }]
+        gaps: [{ gridX: 5, gridY: 8, width: 3, correctAnswer: 5 }]
       });
       expect(result.valid).toBe(false);
       expect(result.errors.some(e => e.includes('does not match'))).toBe(true);
@@ -107,16 +122,16 @@ describe('LevelValidator', () => {
     it('rejects gap with zero width', () => {
       const result = validateLevel({
         ...VALID_LEVEL,
-        gaps: [{ x: 5, y: 8, width: 0, answer: 0 }]
+        gaps: [{ gridX: 5, gridY: 8, width: 0, correctAnswer: 0 }]
       });
       expect(result.valid).toBe(false);
     });
   });
 
-  describe('player/goal validation', () => {
-    it('rejects missing player', () => {
+  describe('start/goal validation', () => {
+    it('rejects missing start', () => {
       const level = { ...VALID_LEVEL };
-      delete level.player;
+      delete level.start;
       const result = validateLevel(level);
       expect(result.valid).toBe(false);
     });
@@ -128,14 +143,14 @@ describe('LevelValidator', () => {
       expect(result.valid).toBe(false);
     });
 
-    it('rejects goal to the left of player', () => {
+    it('rejects goal to the left of start', () => {
       const result = validateLevel({
         ...VALID_LEVEL,
-        player: { x: 10, y: 7 },
-        goal: { x: 5, y: 7 }
+        start: { gridX: 10, gridY: 7 },
+        goal: { gridX: 5, gridY: 7 }
       });
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Goal x'))).toBe(true);
+      expect(result.errors.some(e => e.includes('Goal gridX'))).toBe(true);
     });
   });
 });

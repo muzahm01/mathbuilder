@@ -8,8 +8,8 @@ export function addFullscreenButton(scene, x = 40, y = 30) {
   const corner = 7;
   const lineWidth = 2.5;
 
-  // Background circle for touch target
-  const hitArea = scene.add.circle(x, y, 20, 0x000000, 0.3)
+  // Background circle for touch target (radius 24 for child-friendly tap area)
+  const hitArea = scene.add.circle(x, y, 24, 0x000000, 0.3)
     .setScrollFactor(0)
     .setDepth(1001)
     .setInteractive({ useHandCursor: true });
@@ -85,11 +85,13 @@ export function addFullscreenButton(scene, x = 40, y = 30) {
   scene.scale.on('enterfullscreen', drawIcon);
   scene.scale.on('leavefullscreen', drawIcon);
 
-  // Clean up listeners when scene shuts down
-  scene.events.on('shutdown', () => {
+  // Clean up listeners when scene shuts down or is destroyed
+  const cleanup = () => {
     scene.scale.off('enterfullscreen', drawIcon);
     scene.scale.off('leavefullscreen', drawIcon);
-  });
+  };
+  scene.events.on('shutdown', cleanup);
+  scene.events.on('destroy', cleanup);
 
   return { hitArea, gfx };
 }

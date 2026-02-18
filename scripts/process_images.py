@@ -17,8 +17,10 @@ import os
 import math
 import random
 
-RESOURCES = "/home/user/mathbuilder/resources"
-OUTPUT = "/home/user/mathbuilder/public/assets/images"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+RESOURCES = os.path.join(PROJECT_ROOT, "resources")
+OUTPUT = os.path.join(PROJECT_ROOT, "public", "assets", "images")
 
 
 def ensure_dirs():
@@ -31,17 +33,21 @@ def remove_background(img, threshold=240):
     """
     Remove white/near-white background and checkerboard patterns.
     Returns RGBA image with transparent background.
+    The checkerboard used by Gemini has two alternating grey shades
+    (~190 dark, ~220-250 light). Both must be removed.
     """
     img = img.convert("RGBA")
-    data = img.getdata()
+    data = list(img.getdata())
     new_data = []
     for pixel in data:
         r, g, b, a = pixel
         # Remove white and near-white pixels
         if r > threshold and g > threshold and b > threshold:
             new_data.append((r, g, b, 0))
-        # Remove checkerboard grey pixels (common in AI-generated "transparency")
-        elif abs(r - g) < 10 and abs(g - b) < 10 and 180 < r < 220:
+        # Remove checkerboard grey pixels — covers all grey-ish shades
+        # (Gemini uses dark ~83 to light ~250 alternating squares).
+        # Safe for Botty because blue pixels have large r/g vs b differences.
+        elif abs(r - g) < 15 and abs(g - b) < 15 and 30 < r < 252:
             new_data.append((r, g, b, 0))
         else:
             new_data.append(pixel)
@@ -174,48 +180,62 @@ def extract_sprites(img, num_sprites, target_size=64):
     """
     Extract individual sprite frames from a sheet with scattered poses.
     Returns a properly formatted horizontal sprite sheet.
+
+    Strategy:
+    1. Remove checkerboard/white background.
+    2. Divide image evenly into num_sprites columns.
+    3. For each column, tight-crop to content bbox.
+    4. SQUARIFY: expand the smaller dimension so the crop is square,
+       keeping the robot centred. This prevents tall/narrow robots from
+       being scaled down to a sliver when fitting into target_size x target_size.
+    5. Resize the square crop to target_size x target_size.
     """
     img = img.convert("RGBA")
-
-    # Try to remove background first
     clean = remove_background(img)
 
-    # Find vertical content bounds
-    bbox = clean.getbbox()
-    if bbox is None:
-        # Fallback: just divide evenly
-        frame_w = img.width // num_sprites
-        frames = []
-        for i in range(num_sprites):
-            frame = img.crop((i * frame_w, 0, (i + 1) * frame_w, img.height))
-            frame = frame.resize((target_size, target_size), Image.LANCZOS)
-            frames.append(frame)
-    else:
-        # Crop to vertical content area
-        content = clean.crop((0, bbox[1], clean.width, bbox[3]))
+    frame_w = clean.width // num_sprites
+    frames = []
 
-        # Find sprite columns
-        columns = find_sprite_columns(content, num_sprites)
+    for i in range(num_sprites):
+        x0 = i * frame_w
+        x1 = x0 + frame_w
+        col = clean.crop((x0, 0, x1, clean.height))
 
-        frames = []
-        for left, right in columns:
-            # Extract this sprite with some vertical padding
-            sprite = content.crop((left, 0, right, content.height))
-            sprite = crop_to_content(sprite, padding=1)
+        bbox = col.getbbox()
+        if bbox is None:
+            frames.append(Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0)))
+            continue
 
-            # Resize to fit in target_size x target_size, maintaining aspect ratio
-            sw, sh = sprite.size
-            scale = min(target_size / sw, target_size / sh) * 0.9  # 90% fill
-            new_w = max(1, int(sw * scale))
-            new_h = max(1, int(sh * scale))
-            sprite = sprite.resize((new_w, new_h), Image.LANCZOS)
+        left, top, right, bottom = bbox
+        cw = right - left    # content width
+        ch = bottom - top    # content height
 
-            # Center in target_size x target_size frame
-            frame = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
-            paste_x = (target_size - new_w) // 2
-            paste_y = target_size - new_h - 2  # Align to bottom with 2px margin
-            frame.paste(sprite, (paste_x, paste_y), sprite)
-            frames.append(frame)
+        # Squarify: expand the smaller dimension to match the larger,
+        # keeping the content centred within the square region.
+        sq = max(cw, ch)
+        pad_x = (sq - cw) // 2
+        pad_y = sq - ch       # bottom-align within the square
+
+        # Canvas coords for the square (may extend outside col bounds)
+        sq_x0 = left - pad_x
+        sq_y0 = bottom - sq   # = top - pad_y
+        sq_x1 = sq_x0 + sq
+        sq_y1 = sq_y0 + sq
+
+        # Paste the column into a padded canvas so we can crop freely
+        canvas = Image.new("RGBA", (frame_w + sq * 2, clean.height + sq * 2), (0, 0, 0, 0))
+        canvas.paste(col, (sq, sq), col)
+        # Adjust coords for the canvas offset
+        cx0 = sq_x0 + sq
+        cy0 = sq_y0 + sq
+        square_crop = canvas.crop((cx0, cy0, cx0 + sq, cy0 + sq))
+
+        # Resize to target with a small inset so the sprite doesn't touch the edge
+        inset = max(1, int(sq * 0.04))
+        resized = square_crop.resize((target_size - inset * 2, target_size - inset * 2), Image.LANCZOS)
+        frame = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
+        frame.paste(resized, (inset, inset), resized)
+        frames.append(frame)
 
     # Stitch into horizontal strip
     sheet = Image.new("RGBA", (target_size * num_sprites, target_size), (0, 0, 0, 0))
@@ -424,10 +444,22 @@ def create_button(text, base_color, width=200, height=70):
     )
 
     # ── Text with 3D bevel effect ──
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 52)
-    except OSError:
-        font = ImageFont.load_default()
+    font = None
+    for font_path in [
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+        "/Library/Fonts/Arial Bold.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/System/Library/Fonts/SFNSDisplay.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    ]:
+        try:
+            font = ImageFont.truetype(font_path, 52)
+            break
+        except OSError:
+            continue
+    if font is None:
+        font = ImageFont.load_default(size=52)
 
     bbox = draw.textbbox((0, 0), text, font=font)
     tw = bbox[2] - bbox[0]
@@ -827,7 +859,10 @@ def process_background(name, target_w, target_h, needs_transparency=False):
     img = Image.open(src)
 
     if needs_transparency:
-        img = remove_background(img, threshold=235)
+        # Use smart bg removal (corner-sampling) with high tolerance so that
+        # both shades of the grey checkerboard are removed while keeping
+        # white/light-coloured content like clouds intact.
+        img = remove_bg_smart(img, tolerance=80)
     else:
         img = img.convert("RGBA")
 

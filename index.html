@@ -11,22 +11,24 @@
 </head>
 <body>
   <div id="game-wrapper">
-    <div id="game-container"></div>
-
-    <!-- Math Input Overlay (hidden by default) -->
-    <div id="math-input-overlay" style="display: none;">
-      <div id="math-input-panel">
-        <p id="math-question">How wide is the gap?</p>
-        <input
-          id="math-answer-input"
-          type="number"
-          min="1"
-          max="20"
-          placeholder="?"
-          inputmode="numeric"
-        />
-        <button id="math-submit-btn">Build!</button>
-        <p id="math-feedback"></p>
+    <div id="game-container">
+      <!-- Math Input Overlay (hidden by default, inside game-container to align with canvas) -->
+      <div id="math-input-overlay" style="display: none;">
+        <div id="math-input-panel">
+          <p id="math-question">How wide is the gap?</p>
+          <input
+            id="math-answer-input"
+            type="number"
+            min="1"
+            max="20"
+            maxlength="2"
+            placeholder="?"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+          <button id="math-submit-btn">Build!</button>
+          <p id="math-feedback"></p>
+        </div>
       </div>
     </div>
   </div>

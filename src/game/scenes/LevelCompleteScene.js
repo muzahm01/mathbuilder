@@ -123,7 +123,7 @@ export default class LevelCompleteScene extends Phaser.Scene {
 
     // Next Level button
     if (this.levelNumber < 10) {
-      const nextBtnBg = this.add.rectangle(width / 2, 460, 240, 50, 0x27ae60)
+      const nextBtnBg = this.add.rectangle(width / 2, 460, 260, 54, 0x27ae60)
         .setStrokeStyle(3, 0x1e8449)
         .setAlpha(0)
         .setInteractive({ useHandCursor: true });
@@ -163,8 +163,8 @@ export default class LevelCompleteScene extends Phaser.Scene {
       });
     }
 
-    // Level Select button
-    const selectBtnBg = this.add.rectangle(width / 2, 520, 200, 40, 0x34495e)
+    // Level Select button (minimum 44px height for child touch targets)
+    const selectBtnBg = this.add.rectangle(width / 2, 525, 220, 48, 0x34495e)
       .setStrokeStyle(2, 0x2c3e50)
       .setAlpha(0)
       .setInteractive({ useHandCursor: true });
@@ -175,7 +175,7 @@ export default class LevelCompleteScene extends Phaser.Scene {
       color: 0x34495e, outerStrength: 0, quality: 0.1, distance: 8
     });
 
-    const selectBtnText = this.add.text(width / 2, 520, 'Level Select', {
+    const selectBtnText = this.add.text(width / 2, 525, 'Level Select', {
       fontSize: '20px',
       fontFamily: 'Fredoka One',
       color: '#bdc3c7'
@@ -202,7 +202,5 @@ export default class LevelCompleteScene extends Phaser.Scene {
       this.scene.start('LevelSelect');
     });
 
-    // ── Camera bloom for warm overall look ──────────
-    FXManager.addCameraBloom(this.cameras.main, { strength: 0.3, blurStrength: 0.8 });
   }
 }

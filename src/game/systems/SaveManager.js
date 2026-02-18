@@ -15,11 +15,38 @@ const DEFAULT_SAVE = {
 export function loadSave(storage) {
   try {
     const raw = storage.getItem(SAVE_KEY);
-    if (!raw) return { ...DEFAULT_SAVE };
+    if (!raw) return { ...DEFAULT_SAVE, levelStars: {} };
     const parsed = JSON.parse(raw);
-    return { ...DEFAULT_SAVE, ...parsed };
+
+    // Validate and sanitize deserialized data to prevent tampering
+    const save = { ...DEFAULT_SAVE, levelStars: {} };
+
+    if (typeof parsed.xp === 'number' && Number.isFinite(parsed.xp) && parsed.xp >= 0) {
+      save.xp = Math.floor(parsed.xp);
+    }
+
+    if (typeof parsed.levelsUnlocked === 'number' && Number.isFinite(parsed.levelsUnlocked)
+        && parsed.levelsUnlocked >= 1 && parsed.levelsUnlocked <= 11) {
+      save.levelsUnlocked = Math.floor(parsed.levelsUnlocked);
+    }
+
+    if (parsed.levelStars && typeof parsed.levelStars === 'object'
+        && !Array.isArray(parsed.levelStars)) {
+      for (const [key, value] of Object.entries(parsed.levelStars)) {
+        // Only accept keys matching "levelN" pattern (1-10) with star values 1-3
+        if (/^level([1-9]|10)$/.test(key)
+            && typeof value === 'number' && value >= 1 && value <= 3) {
+          save.levelStars[key] = Math.floor(value);
+        }
+      }
+    }
+
+    // Recalculate totalStars from validated levelStars
+    save.totalStars = Object.values(save.levelStars).reduce((sum, s) => sum + s, 0);
+
+    return save;
   } catch {
-    return { ...DEFAULT_SAVE };
+    return { ...DEFAULT_SAVE, levelStars: {} };
   }
 }
 

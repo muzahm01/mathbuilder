@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 export class TouchControls {
   constructor(scene) {
     this.left = false;
@@ -7,22 +9,37 @@ export class TouchControls {
     // Only show on touch devices
     if (!scene.sys.game.device.input.touch) return;
 
-    this.createButton(scene, 80, 520, 'arrow-left', 'left');
-    this.createButton(scene, 180, 520, 'arrow-right', 'right');
-    this.createButton(scene, 720, 520, 'arrow-jump', 'jump');
+    const { width, height } = scene.scale;
+    const btnY = height - 80;
+    const padding = 70;
+
+    this.createButton(scene, padding, btnY, 'arrow-left', 'left');
+    this.createButton(scene, padding + 100, btnY, 'arrow-right', 'right');
+    this.createButton(scene, width - padding, btnY, 'arrow-jump', 'jump');
   }
 
   createButton(scene, x, y, textureKey, direction) {
     const btn = scene.add.image(x, y, textureKey)
-      .setScrollFactor(0)      // Stay fixed on screen
-      .setAlpha(0.4)           // Semi-transparent
-      .setInteractive()
-      .setDepth(1000);         // Always on top
+      .setScrollFactor(0)
+      .setAlpha(0.4)
+      .setDepth(1000)
+      .setScale(1.2);
+
+    // Use a larger hit area for small fingers (children aged 5-8)
+    const hitPadding = 16;
+    btn.setInteractive({
+      hitArea: new Phaser.Geom.Rectangle(
+        -hitPadding, -hitPadding,
+        btn.width + hitPadding * 2,
+        btn.height + hitPadding * 2
+      ),
+      hitAreaCallback: Phaser.Geom.Rectangle.Contains
+    });
 
     // Handle multi-touch correctly
     btn.on('pointerdown', () => {
       this[direction] = true;
-      btn.setAlpha(0.7);       // Visual press feedback
+      btn.setAlpha(0.7);
     });
     btn.on('pointerup', () => {
       this[direction] = false;
