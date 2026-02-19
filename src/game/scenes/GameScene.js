@@ -134,8 +134,17 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
-    // ── Fullscreen Button ──────────────────────────
-    addFullscreenButton(this, 770, 30);
+    // ── Fullscreen Button (consistent top-left position across scenes) ──
+    addFullscreenButton(this, 40, 30);
+
+    // ── Level Label HUD ────────────────────────────
+    this.add.text(this.scale.width / 2, 20, `Level ${this.levelNumber}`, {
+      fontSize: '18px',
+      fontFamily: 'Fredoka One',
+      color: '#ffffff',
+      stroke: '#2c3e50',
+      strokeThickness: 3
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(999);
 
     // ── Touch Controls ──────────────────────────────
     this.touchControls = new TouchControls(this);
@@ -154,10 +163,6 @@ export default class GameScene extends Phaser.Scene {
 
     // ── Store level data for later reference ─────────
     this.levelData = levelData;
-
-    // ── 3D Visual Effects ────────────────────────────────
-    // Subtle camera bloom for warm, soft overall look
-    FXManager.addCameraBloom(this.cameras.main, { strength: 0.25, blurStrength: 0.8 });
 
     // ── Fade in ───────────────────────────────────────
     this.cameras.main.fadeIn(300, 0, 0, 0);
@@ -207,21 +212,16 @@ export default class GameScene extends Phaser.Scene {
     if (this.levelComplete) return;
     this.levelComplete = true;
 
+    // Always hide the math overlay immediately — it may still be visible
+    // if the player reached the flag before the 600ms auto-hide timer fired.
+    if (this.mathUI) this.mathUI.hide();
+
     this.physics.pause();
     this.sound.play('sfx-win', { volume: 0.8 });
 
-    // Calculate stars
-    let stars;
-    if (this.wrongAttempts === 0) stars = 3;
-    else if (this.wrongAttempts <= 2) stars = 2;
-    else stars = 1;
-
-    // Calculate XP
-    const gapCount = this.levelData.gaps.length;
-    const xpEarned = (gapCount * 10) + (stars * 5);
-
-    // Save progress
-    const { save } = completeLevelAndSave(localStorage, this.levelNumber, this.wrongAttempts);
+    // Save progress (calculates stars and XP internally)
+    const { stars, save } = completeLevelAndSave(localStorage, this.levelNumber, this.wrongAttempts);
+    const xpEarned = stars * 10;
     const title = getTitleForXP(save.xp);
 
     // Brief celebration delay, then fade transition
@@ -240,7 +240,16 @@ export default class GameScene extends Phaser.Scene {
   }
 
   restartLevel() {
-    this.mathUI.hide();
+    if (this.mathUI) this.mathUI.hide();
     this.scene.restart({ levelNumber: this.levelNumber });
+  }
+
+  shutdown() {
+    // Remove MathInputUI event listeners so they don't stack up
+    // across level transitions (each new GameScene creates a new instance).
+    if (this.mathUI) {
+      this.mathUI.destroy();
+      this.mathUI = null;
+    }
   }
 }

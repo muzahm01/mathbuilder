@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 """
-MathBuilder Image Processing Script
-====================================
+MathBuilder Image Processing Script — Modern 3D Style
+=====================================================
 Processes raw Gemini-generated images in resources/ into game-ready assets
 in public/assets/images/ with correct dimensions, format, and transparency.
+
+All programmatic assets use modern 3D rendering techniques:
+- Multi-layer gradients for depth
+- Ambient occlusion simulation
+- Specular highlights and rim lighting
+- Glass-morphism and PBR-inspired materials
 """
 
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 import os
 import math
+import random
 
-RESOURCES = "/home/user/mathbuilder/resources"
-OUTPUT = "/home/user/mathbuilder/public/assets/images"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+RESOURCES = os.path.join(PROJECT_ROOT, "resources")
+OUTPUT = os.path.join(PROJECT_ROOT, "public", "assets", "images")
 
 
 def ensure_dirs():
@@ -24,17 +33,21 @@ def remove_background(img, threshold=240):
     """
     Remove white/near-white background and checkerboard patterns.
     Returns RGBA image with transparent background.
+    The checkerboard used by Gemini has two alternating grey shades
+    (~190 dark, ~220-250 light). Both must be removed.
     """
     img = img.convert("RGBA")
-    data = img.getdata()
+    data = list(img.getdata())
     new_data = []
     for pixel in data:
         r, g, b, a = pixel
         # Remove white and near-white pixels
         if r > threshold and g > threshold and b > threshold:
             new_data.append((r, g, b, 0))
-        # Remove checkerboard grey pixels (common in AI-generated "transparency")
-        elif abs(r - g) < 10 and abs(g - b) < 10 and 180 < r < 220:
+        # Remove checkerboard grey pixels — covers all grey-ish shades
+        # (Gemini uses dark ~83 to light ~250 alternating squares).
+        # Safe for Botty because blue pixels have large r/g vs b differences.
+        elif abs(r - g) < 15 and abs(g - b) < 15 and 30 < r < 252:
             new_data.append((r, g, b, 0))
         else:
             new_data.append(pixel)
@@ -167,48 +180,62 @@ def extract_sprites(img, num_sprites, target_size=64):
     """
     Extract individual sprite frames from a sheet with scattered poses.
     Returns a properly formatted horizontal sprite sheet.
+
+    Strategy:
+    1. Remove checkerboard/white background.
+    2. Divide image evenly into num_sprites columns.
+    3. For each column, tight-crop to content bbox.
+    4. SQUARIFY: expand the smaller dimension so the crop is square,
+       keeping the robot centred. This prevents tall/narrow robots from
+       being scaled down to a sliver when fitting into target_size x target_size.
+    5. Resize the square crop to target_size x target_size.
     """
     img = img.convert("RGBA")
-
-    # Try to remove background first
     clean = remove_background(img)
 
-    # Find vertical content bounds
-    bbox = clean.getbbox()
-    if bbox is None:
-        # Fallback: just divide evenly
-        frame_w = img.width // num_sprites
-        frames = []
-        for i in range(num_sprites):
-            frame = img.crop((i * frame_w, 0, (i + 1) * frame_w, img.height))
-            frame = frame.resize((target_size, target_size), Image.LANCZOS)
-            frames.append(frame)
-    else:
-        # Crop to vertical content area
-        content = clean.crop((0, bbox[1], clean.width, bbox[3]))
+    frame_w = clean.width // num_sprites
+    frames = []
 
-        # Find sprite columns
-        columns = find_sprite_columns(content, num_sprites)
+    for i in range(num_sprites):
+        x0 = i * frame_w
+        x1 = x0 + frame_w
+        col = clean.crop((x0, 0, x1, clean.height))
 
-        frames = []
-        for left, right in columns:
-            # Extract this sprite with some vertical padding
-            sprite = content.crop((left, 0, right, content.height))
-            sprite = crop_to_content(sprite, padding=1)
+        bbox = col.getbbox()
+        if bbox is None:
+            frames.append(Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0)))
+            continue
 
-            # Resize to fit in target_size x target_size, maintaining aspect ratio
-            sw, sh = sprite.size
-            scale = min(target_size / sw, target_size / sh) * 0.9  # 90% fill
-            new_w = max(1, int(sw * scale))
-            new_h = max(1, int(sh * scale))
-            sprite = sprite.resize((new_w, new_h), Image.LANCZOS)
+        left, top, right, bottom = bbox
+        cw = right - left    # content width
+        ch = bottom - top    # content height
 
-            # Center in target_size x target_size frame
-            frame = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
-            paste_x = (target_size - new_w) // 2
-            paste_y = target_size - new_h - 2  # Align to bottom with 2px margin
-            frame.paste(sprite, (paste_x, paste_y), sprite)
-            frames.append(frame)
+        # Squarify: expand the smaller dimension to match the larger,
+        # keeping the content centred within the square region.
+        sq = max(cw, ch)
+        pad_x = (sq - cw) // 2
+        pad_y = sq - ch       # bottom-align within the square
+
+        # Canvas coords for the square (may extend outside col bounds)
+        sq_x0 = left - pad_x
+        sq_y0 = bottom - sq   # = top - pad_y
+        sq_x1 = sq_x0 + sq
+        sq_y1 = sq_y0 + sq
+
+        # Paste the column into a padded canvas so we can crop freely
+        canvas = Image.new("RGBA", (frame_w + sq * 2, clean.height + sq * 2), (0, 0, 0, 0))
+        canvas.paste(col, (sq, sq), col)
+        # Adjust coords for the canvas offset
+        cx0 = sq_x0 + sq
+        cy0 = sq_y0 + sq
+        square_crop = canvas.crop((cx0, cy0, cx0 + sq, cy0 + sq))
+
+        # Resize to target with a small inset so the sprite doesn't touch the edge
+        inset = max(1, int(sq * 0.04))
+        resized = square_crop.resize((target_size - inset * 2, target_size - inset * 2), Image.LANCZOS)
+        frame = Image.new("RGBA", (target_size, target_size), (0, 0, 0, 0))
+        frame.paste(resized, (inset, inset), resized)
+        frames.append(frame)
 
     # Stitch into horizontal strip
     sheet = Image.new("RGBA", (target_size * num_sprites, target_size), (0, 0, 0, 0))
@@ -218,221 +245,584 @@ def extract_sprites(img, num_sprites, target_size=64):
     return sheet
 
 
-def draw_star(draw, cx, cy, outer_r, inner_r, color, outline=None):
-    """Draw a 5-pointed star centered at (cx, cy)."""
+def draw_star_points(cx, cy, outer_r, inner_r, rotation=0):
+    """Generate 5-pointed star polygon points centered at (cx, cy)."""
     points = []
     for i in range(10):
-        angle = math.radians(i * 36 - 90)
+        angle = math.radians(i * 36 - 90 + rotation)
         r = outer_r if i % 2 == 0 else inner_r
         points.append((cx + r * math.cos(angle), cy + r * math.sin(angle)))
-    draw.polygon(points, fill=color, outline=outline)
+    return points
 
 
 def create_star_filled(size=32):
-    """Create a glossy gold filled star icon."""
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    """Create a modern 3D metallic gold star with specular highlights and depth."""
+    # Work at 4x for smooth anti-aliasing
+    s = size * 4
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    cx, cy = size // 2, size // 2 + 1
-    outer_r = size // 2 - 2
+    cx, cy = s // 2, s // 2 + 2
+    outer_r = s // 2 - 6
     inner_r = outer_r * 0.38
 
-    # Main star
-    draw_star(draw, cx, cy, outer_r, inner_r, (255, 200, 0, 255), outline=(200, 150, 0, 255))
-    # Highlight overlay (lighter star offset up-left)
-    draw_star(draw, cx - 1, cy - 1, outer_r - 2, inner_r - 1, (255, 230, 80, 180))
-    # Bright spot
-    draw.ellipse((cx - 4, cy - 6, cx + 1, cy - 2), fill=(255, 255, 200, 160))
+    # Drop shadow
+    shadow_pts = draw_star_points(cx + 3, cy + 4, outer_r, inner_r)
+    draw.polygon(shadow_pts, fill=(80, 50, 0, 80))
 
+    # Apply blur to shadow
+    shadow_layer = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow_layer)
+    sd.polygon(shadow_pts, fill=(80, 50, 0, 70))
+    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(4))
+    img = Image.alpha_composite(img, shadow_layer)
+    draw = ImageDraw.Draw(img)
+
+    # Dark base (bottom/shadow side of 3D star)
+    base_pts = draw_star_points(cx + 1, cy + 2, outer_r, inner_r)
+    draw.polygon(base_pts, fill=(180, 120, 0, 255))
+
+    # Main gold body
+    main_pts = draw_star_points(cx, cy, outer_r, inner_r)
+    draw.polygon(main_pts, fill=(255, 200, 20, 255), outline=(200, 145, 0, 255))
+
+    # Upper gradient overlay (lighter gold, simulating light from top-left)
+    upper_pts = draw_star_points(cx - 1, cy - 1, outer_r - 3, inner_r - 1)
+    draw.polygon(upper_pts, fill=(255, 225, 60, 200))
+
+    # Specular highlight band (bright streak across upper portion)
+    highlight_pts = draw_star_points(cx - 2, cy - 3, outer_r - 6, inner_r - 2)
+    draw.polygon(highlight_pts, fill=(255, 245, 140, 150))
+
+    # Hot specular spot (bright white-gold point)
+    spot_r = int(outer_r * 0.2)
+    draw.ellipse((cx - spot_r - 6, cy - spot_r - 8,
+                  cx + spot_r - 6, cy + spot_r - 8),
+                 fill=(255, 255, 220, 200))
+
+    # Tiny sparkle/lens flare on top point
+    sparkle_y = cy - outer_r + 2
+    draw.line([(cx - 4, sparkle_y), (cx + 4, sparkle_y)], fill=(255, 255, 255, 200), width=1)
+    draw.line([(cx, sparkle_y - 4), (cx, sparkle_y + 4)], fill=(255, 255, 255, 200), width=1)
+
+    # Rim light on right edge
+    rim_pts = draw_star_points(cx + 2, cy, outer_r - 1, inner_r)
+    rim_img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    rd = ImageDraw.Draw(rim_img)
+    rd.polygon(rim_pts, fill=(255, 240, 180, 60))
+    img = Image.alpha_composite(img, rim_img)
+
+    img = img.resize((size, size), Image.LANCZOS)
     return img
 
 
 def create_star_empty(size=32):
-    """Create a grey empty star icon."""
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    """Create a modern 3D brushed silver empty star with subtle depth."""
+    s = size * 4
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    cx, cy = size // 2, size // 2 + 1
-    outer_r = size // 2 - 2
+    cx, cy = s // 2, s // 2 + 2
+    outer_r = s // 2 - 6
     inner_r = outer_r * 0.38
 
-    # Grey star
-    draw_star(draw, cx, cy, outer_r, inner_r, (160, 165, 175, 255), outline=(120, 125, 135, 255))
-    # Subtle highlight
-    draw_star(draw, cx - 1, cy - 1, outer_r - 2, inner_r - 1, (180, 185, 195, 120))
+    # Soft shadow
+    shadow_layer = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow_layer)
+    shadow_pts = draw_star_points(cx + 2, cy + 3, outer_r, inner_r)
+    sd.polygon(shadow_pts, fill=(0, 0, 0, 40))
+    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(3))
+    img = Image.alpha_composite(img, shadow_layer)
+    draw = ImageDraw.Draw(img)
 
+    # Dark edge (3D thickness)
+    base_pts = draw_star_points(cx + 1, cy + 2, outer_r, inner_r)
+    draw.polygon(base_pts, fill=(100, 105, 115, 255))
+
+    # Main silver body
+    main_pts = draw_star_points(cx, cy, outer_r, inner_r)
+    draw.polygon(main_pts, fill=(155, 160, 175, 255), outline=(115, 120, 135, 255))
+
+    # Upper highlight (brushed metal feel)
+    upper_pts = draw_star_points(cx - 1, cy - 1, outer_r - 3, inner_r - 1)
+    draw.polygon(upper_pts, fill=(180, 185, 200, 160))
+
+    # Subtle specular
+    spec_pts = draw_star_points(cx - 2, cy - 3, outer_r - 8, inner_r - 3)
+    draw.polygon(spec_pts, fill=(200, 205, 215, 100))
+
+    # Inner bevel (recessed center)
+    inner_pts = draw_star_points(cx, cy + 1, outer_r - 10, inner_r - 3)
+    draw.polygon(inner_pts, fill=(130, 135, 150, 100))
+
+    img = img.resize((size, size), Image.LANCZOS)
     return img
 
 
 def create_button(text, base_color, width=200, height=70):
-    """Create a glossy candy-style button with text."""
-    img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    """
+    Create a modern 3D-style glossy button with PBR-inspired materials.
+    Features: 3D extrusion, specular highlights, environment reflection,
+    soft drop shadow, and beveled text.
+    """
+    # Work at 2x for anti-aliasing
+    w, h = width * 2, height * 2
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
     r, g, b = base_color
-    radius = height // 2
+    radius = h // 2
 
-    # Shadow
-    draw.rounded_rectangle(
-        (4, 6, width - 4, height - 2),
+    # ── Soft blurred drop shadow ──
+    shadow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    sd.rounded_rectangle(
+        (8, 14, w - 4, h - 2),
         radius=radius,
-        fill=(r // 3, g // 3, b // 3, 120)
+        fill=(int(r * 0.15), int(g * 0.15), int(b * 0.15), 120)
+    )
+    shadow = shadow.filter(ImageFilter.GaussianBlur(6))
+    img = Image.alpha_composite(img, shadow)
+    draw = ImageDraw.Draw(img)
+
+    # ── 3D extrusion (visible thickness on bottom and right) ──
+    for offset in range(6, 0, -1):
+        darkness = 0.4 + (6 - offset) * 0.05
+        draw.rounded_rectangle(
+            (4 + offset, 4 + offset + 2, w - 4 + offset // 2, h - 6 + offset),
+            radius=radius,
+            fill=(int(r * darkness), int(g * darkness), int(b * darkness), 255)
+        )
+
+    # ── Main button body ──
+    # Bottom half (darker)
+    draw.rounded_rectangle(
+        (4, 4, w - 4, h - 8),
+        radius=radius,
+        fill=(int(r * 0.8), int(g * 0.8), int(b * 0.8), 255)
     )
 
-    # Main body (darker bottom half)
+    # Upper half gradient (brighter, main color)
     draw.rounded_rectangle(
-        (2, 2, width - 2, height - 4),
-        radius=radius,
-        fill=(int(r * 0.75), int(g * 0.75), int(b * 0.75), 255)
-    )
-
-    # Upper gradient (lighter)
-    draw.rounded_rectangle(
-        (2, 2, width - 2, height // 2 + 8),
+        (4, 4, w - 4, h // 2 + 10),
         radius=radius,
         fill=(r, g, b, 255)
     )
 
-    # Gloss highlight
+    # ── Specular highlight streak (glossy top surface) ──
     draw.rounded_rectangle(
-        (8, 4, width - 8, height // 3),
-        radius=radius - 4,
-        fill=(min(255, r + 60), min(255, g + 60), min(255, b + 60), 100)
+        (12, 6, w - 12, h // 3 + 4),
+        radius=radius - 6,
+        fill=(min(255, r + 50), min(255, g + 50), min(255, b + 50), 180)
     )
 
-    # Border
+    # Hot specular line (sharp bright edge near top)
     draw.rounded_rectangle(
-        (2, 2, width - 2, height - 4),
+        (20, 8, w - 20, 18),
+        radius=6,
+        fill=(min(255, r + 100), min(255, g + 100), min(255, b + 100), 120)
+    )
+
+    # ── Environment reflection (subtle bright band in lower third) ──
+    draw.rounded_rectangle(
+        (16, h // 2 + 4, w - 16, h // 2 + 14),
+        radius=4,
+        fill=(min(255, r + 30), min(255, g + 30), min(255, b + 30), 50)
+    )
+
+    # ── Border with subtle inner glow ──
+    draw.rounded_rectangle(
+        (4, 4, w - 4, h - 8),
         radius=radius,
-        outline=(int(r * 0.5), int(g * 0.5), int(b * 0.5), 255),
-        width=2
+        outline=(int(r * 0.4), int(g * 0.4), int(b * 0.4), 255),
+        width=3
+    )
+    # Inner highlight border
+    draw.rounded_rectangle(
+        (7, 7, w - 7, h - 11),
+        radius=radius - 3,
+        outline=(min(255, r + 40), min(255, g + 40), min(255, b + 40), 60),
+        width=1
     )
 
-    # Text
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28)
-    except OSError:
-        font = ImageFont.load_default()
+    # ── Text with 3D bevel effect ──
+    font = None
+    for font_path in [
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+        "/Library/Fonts/Arial Bold.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/System/Library/Fonts/SFNSDisplay.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    ]:
+        try:
+            font = ImageFont.truetype(font_path, 52)
+            break
+        except OSError:
+            continue
+    if font is None:
+        font = ImageFont.load_default(size=52)
 
     bbox = draw.textbbox((0, 0), text, font=font)
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
-    tx = (width - tw) // 2
-    ty = (height - th) // 2 - 3
+    tx = (w - tw) // 2
+    ty = (h - th) // 2 - 6
 
-    # Text shadow
-    draw.text((tx + 1, ty + 2), text, fill=(0, 0, 0, 80), font=font)
-    # White text
+    # Text extrusion shadow (3D depth)
+    for offset in range(4, 0, -1):
+        alpha = int(60 + (4 - offset) * 20)
+        draw.text((tx + offset, ty + offset + 2), text,
+                  fill=(0, 0, 0, alpha), font=font)
+
+    # Text body (white)
     draw.text((tx, ty), text, fill=(255, 255, 255, 255), font=font)
 
+    # Text specular highlight (bright top edge)
+    draw.text((tx, ty - 1), text, fill=(255, 255, 255, 60), font=font)
+
+    # Downscale
+    img = img.resize((width, height), Image.LANCZOS)
     return img
 
 
 def create_arrow_button(direction, size=64):
-    """Create a semi-transparent touch control button with arrow."""
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    """
+    Create a modern glass-morphism touch control button with 3D depth,
+    soft glow ring, frosted glass effect, and beveled arrow icon.
+    """
+    # Work at 4x for smooth anti-aliasing
+    s = size * 4
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Circle background
-    draw.ellipse((2, 2, size - 2, size - 2), fill=(40, 50, 65, 160))
-    draw.ellipse((2, 2, size - 2, size - 2), outline=(100, 115, 135, 200), width=2)
+    cx, cy = s // 2, s // 2
+    pad = 8
 
-    cx, cy = size // 2, size // 2
-    s = size // 5  # Arrow size
+    # ── Outer glow ring (subtle neon-like) ──
+    glow = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.ellipse((pad - 4, pad - 4, s - pad + 4, s - pad + 4),
+               fill=(120, 160, 220, 30))
+    glow = glow.filter(ImageFilter.GaussianBlur(8))
+    img = Image.alpha_composite(img, glow)
+    draw = ImageDraw.Draw(img)
+
+    # ── Glass body (frosted dark background) ──
+    # Outer ring
+    draw.ellipse((pad, pad, s - pad, s - pad),
+                 fill=(25, 35, 55, 180),
+                 outline=(80, 110, 160, 200), width=3)
+
+    # Inner gradient (lighter at top for 3D dome effect)
+    inner_pad = pad + 6
+    draw.ellipse((inner_pad, inner_pad, s - inner_pad, s - inner_pad),
+                 fill=(40, 55, 80, 140))
+
+    # Upper specular highlight (glass reflection)
+    highlight = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    hd = ImageDraw.Draw(highlight)
+    # Create an elliptical highlight in the upper portion
+    hx1, hy1 = int(s * 0.25), int(s * 0.12)
+    hx2, hy2 = int(s * 0.75), int(s * 0.45)
+    hd.ellipse((hx1, hy1, hx2, hy2), fill=(140, 170, 220, 50))
+    highlight = highlight.filter(ImageFilter.GaussianBlur(6))
+    img = Image.alpha_composite(img, highlight)
+    draw = ImageDraw.Draw(img)
+
+    # ── Arrow icon with 3D bevel ──
+    arrow_s = s // 5  # Arrow size
 
     if direction == "left":
-        points = [(cx + s, cy - s), (cx - s, cy), (cx + s, cy + s)]
+        points = [(cx + arrow_s, cy - arrow_s), (cx - arrow_s, cy), (cx + arrow_s, cy + arrow_s)]
     elif direction == "right":
-        points = [(cx - s, cy - s), (cx + s, cy), (cx - s, cy + s)]
+        points = [(cx - arrow_s, cy - arrow_s), (cx + arrow_s, cy), (cx - arrow_s, cy + arrow_s)]
     elif direction == "jump":
-        points = [(cx - s, cy + s // 2), (cx, cy - s), (cx + s, cy + s // 2)]
+        points = [(cx - arrow_s, cy + arrow_s // 2), (cx, cy - arrow_s), (cx + arrow_s, cy + arrow_s // 2)]
 
-    draw.polygon(points, fill=(240, 245, 255, 220))
+    # Arrow shadow (depth)
+    shadow_pts = [(x + 2, y + 3) for x, y in points]
+    draw.polygon(shadow_pts, fill=(0, 0, 0, 80))
 
+    # Arrow body (bright white)
+    draw.polygon(points, fill=(235, 240, 255, 240))
+
+    # Arrow highlight (top edge brighter)
+    highlight_pts = [(x - 1, y - 1) for x, y in points]
+    draw.polygon(highlight_pts, fill=(255, 255, 255, 60))
+
+    # ── Bottom rim light (subtle edge glow) ──
+    rim = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    rd = ImageDraw.Draw(rim)
+    rd.arc((pad + 2, pad + 2, s - pad - 2, s - pad - 2),
+           start=30, end=150, fill=(100, 140, 200, 60), width=2)
+    img = Image.alpha_composite(img, rim)
+
+    img = img.resize((size, size), Image.LANCZOS)
     return img
 
 
 def create_math_input_bg(width=400, height=250):
-    """Create a kid-friendly math input panel background."""
-    img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
+    """
+    Create a modern 3D glass-morphism math input panel with PBR-inspired materials.
+    Features: frosted glass effect, 3D depth/extrusion, recessed input area,
+    soft ambient occlusion, and warm inner glow.
+    """
+    # Work at 2x for anti-aliasing
+    w, h = width * 2, height * 2
+    result = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    radius = 40
 
-    # Panel body
-    draw.rounded_rectangle(
-        (8, 8, width - 8, height - 8),
-        radius=20,
-        fill=(232, 240, 254, 245)
-    )
-
-    # Border
-    draw.rounded_rectangle(
-        (8, 8, width - 8, height - 8),
-        radius=20,
-        outline=(74, 144, 217, 255),
-        width=4
-    )
-
-    # Inner white area for input
-    inner_y = height // 2 - 25
-    draw.rounded_rectangle(
-        (40, inner_y, width - 40, inner_y + 50),
-        radius=12,
-        fill=(255, 255, 255, 255),
-        outline=(74, 144, 217, 180),
-        width=2
-    )
-
-    # Drop shadow
-    shadow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    # ── Soft blurred drop shadow ──
+    shadow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
     sd.rounded_rectangle(
-        (12, 14, width - 4, height - 2),
-        radius=20,
-        fill=(0, 0, 0, 40)
+        (20, 26, w - 8, h - 4),
+        radius=radius,
+        fill=(20, 40, 80, 60)
     )
-    shadow = shadow.filter(ImageFilter.GaussianBlur(4))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(12))
+    result = Image.alpha_composite(result, shadow)
 
-    # Composite shadow behind panel
-    result = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-    result.paste(shadow, (0, 0), shadow)
-    result.paste(img, (0, 0), img)
+    # ── 3D extrusion (visible thickness at bottom and right) ──
+    panel = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    pd = ImageDraw.Draw(panel)
+    for offset in range(8, 0, -1):
+        darkness = int(50 + offset * 8)
+        pd.rounded_rectangle(
+            (16 + offset, 16 + offset + 2, w - 16 + offset // 2, h - 16 + offset),
+            radius=radius,
+            fill=(darkness, int(darkness * 1.2), int(darkness * 1.6), 200)
+        )
+    result = Image.alpha_composite(result, panel)
 
+    # ── Main panel body (glass-morphism gradient) ──
+    body = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(body)
+
+    # Base panel color
+    bd.rounded_rectangle(
+        (16, 16, w - 16, h - 16),
+        radius=radius,
+        fill=(210, 225, 250, 235)
+    )
+
+    # Upper gradient (lighter, simulating light from above)
+    bd.rounded_rectangle(
+        (16, 16, w - 16, h // 2 + 20),
+        radius=radius,
+        fill=(230, 240, 255, 240)
+    )
+
+    # Specular highlight streak at top
+    bd.rounded_rectangle(
+        (30, 20, w - 30, 50),
+        radius=15,
+        fill=(255, 255, 255, 60)
+    )
+
+    result = Image.alpha_composite(result, body)
+
+    # ── Border with 3D depth ──
+    border = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    brd = ImageDraw.Draw(border)
+    # Outer border (darker)
+    brd.rounded_rectangle(
+        (16, 16, w - 16, h - 16),
+        radius=radius,
+        outline=(60, 120, 200, 255),
+        width=5
+    )
+    # Inner highlight border
+    brd.rounded_rectangle(
+        (22, 22, w - 22, h - 22),
+        radius=radius - 4,
+        outline=(140, 190, 255, 80),
+        width=2
+    )
+    result = Image.alpha_composite(result, border)
+
+    # ── Recessed input area (sunken 3D effect) ──
+    input_area = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    ia = ImageDraw.Draw(input_area)
+    inner_y = h // 2 - 50
+    inner_h = 100
+
+    # Inset shadow (top and left darker = recessed)
+    ia.rounded_rectangle(
+        (76, inner_y - 2, w - 76, inner_y + inner_h + 2),
+        radius=18,
+        fill=(40, 70, 120, 40)
+    )
+    # White input background
+    ia.rounded_rectangle(
+        (80, inner_y, w - 80, inner_y + inner_h),
+        radius=16,
+        fill=(255, 255, 255, 250)
+    )
+    # Bottom highlight of inset (light coming from below = recessed)
+    ia.rounded_rectangle(
+        (82, inner_y + inner_h - 6, w - 82, inner_y + inner_h - 2),
+        radius=4,
+        fill=(220, 235, 255, 60)
+    )
+    # Inset border
+    ia.rounded_rectangle(
+        (80, inner_y, w - 80, inner_y + inner_h),
+        radius=16,
+        outline=(70, 130, 210, 160),
+        width=2
+    )
+    result = Image.alpha_composite(result, input_area)
+
+    # ── Subtle inner glow around edges ──
+    glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.rounded_rectangle(
+        (20, 20, w - 20, h - 20),
+        radius=radius - 2,
+        outline=(100, 160, 255, 30),
+        width=6
+    )
+    glow = glow.filter(ImageFilter.GaussianBlur(4))
+    result = Image.alpha_composite(result, glow)
+
+    # ── Ambient occlusion at bottom edge ──
+    ao = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    aod = ImageDraw.Draw(ao)
+    aod.rounded_rectangle(
+        (20, h - 50, w - 20, h - 16),
+        radius=20,
+        fill=(30, 50, 90, 25)
+    )
+    ao = ao.filter(ImageFilter.GaussianBlur(6))
+    result = Image.alpha_composite(result, ao)
+
+    result = result.resize((width, height), Image.LANCZOS)
     return result
 
 
 def create_grass_tile(size=64):
     """
-    Create a front-facing grass tile suitable for side-scrolling.
-    Green grass on top, brown dirt below.
+    Create a modern 3D-style grass tile with depth, ambient occlusion,
+    volumetric grass blades, and layered dirt with embedded stones.
     """
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    # Work at 2x resolution for anti-aliasing, then downscale
+    s = size * 2
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
-    # Dirt body (lower portion)
-    draw.rectangle((0, 0, size, size), fill=(139, 100, 60))
+    # ── DIRT BODY with layered depth ──
+    # Base warm dirt color
+    for y in range(s):
+        # Vertical gradient: lighter near top (near grass), darker at bottom
+        t = y / s
+        r = int(155 - t * 30 + math.sin(y * 0.3) * 8)
+        g = int(110 - t * 25 + math.sin(y * 0.4 + 1) * 6)
+        b = int(65 - t * 15 + math.sin(y * 0.5 + 2) * 4)
+        draw.line([(0, y), (s, y)], fill=(r, g, b, 255))
 
-    # Dirt variation stripes
-    for y in range(0, size, 8):
-        shade = 130 + (y * 3) % 20 - 10
-        draw.rectangle((0, y, size, y + 4), fill=(shade, int(shade * 0.72), int(shade * 0.43)))
+    # Horizontal sediment layers with ambient occlusion
+    layer_positions = [30, 48, 65, 82, 100, 115]
+    for ly in layer_positions:
+        ly2 = int(ly * s / 128)
+        # Dark line (crack/shadow between layers)
+        draw.line([(0, ly2), (s, ly2)], fill=(90, 60, 35, 140), width=2)
+        # Ambient occlusion below crack
+        draw.line([(0, ly2 + 2), (s, ly2 + 2)], fill=(80, 55, 30, 60), width=1)
+        # Light edge above crack (rim light)
+        draw.line([(0, ly2 - 1), (s, ly2 - 1)], fill=(175, 130, 85, 80), width=1)
 
-    # Small embedded stones
-    stones = [(12, 35, 18, 40), (40, 25, 48, 31), (8, 50, 14, 55), (50, 45, 58, 50)]
-    for sx, sy, ex, ey in stones:
-        draw.rounded_rectangle((sx, sy, ex, ey), radius=2, fill=(120, 90, 55))
+    # Embedded stones with 3D shading
+    random.seed(42)  # Deterministic for reproducibility
+    stones = [(20, 55, 14), (70, 45, 10), (16, 90, 12), (90, 80, 11),
+              (55, 70, 9), (100, 105, 13), (35, 110, 8)]
+    for sx, sy, sr in stones:
+        sx2, sy2, sr2 = int(sx * s / 128), int(sy * s / 128), int(sr * s / 128)
+        # Stone shadow (ambient occlusion)
+        draw.ellipse((sx2 - sr2 + 2, sy2 - sr2 + 2, sx2 + sr2 + 2, sy2 + sr2 + 2),
+                     fill=(70, 45, 25, 80))
+        # Stone body
+        draw.ellipse((sx2 - sr2, sy2 - sr2, sx2 + sr2, sy2 + sr2),
+                     fill=(120, 95, 65, 255))
+        # Stone highlight (specular)
+        draw.ellipse((sx2 - sr2 + 2, sy2 - sr2 + 1, sx2 - sr2 + sr2, sy2 - sr2 + sr2 // 2 + 1),
+                     fill=(150, 120, 85, 100))
 
-    # Grass top layer (top ~20 pixels)
-    grass_h = 18
-    # Base grass
-    draw.rectangle((0, 0, size, grass_h), fill=(80, 185, 60))
-    # Lighter top
-    draw.rectangle((0, 0, size, grass_h // 2), fill=(100, 210, 75))
-    # Grass edge (wavy-ish bottom)
-    for x in range(0, size, 4):
-        offset = int(2 * math.sin(x * 0.5))
-        draw.rectangle((x, grass_h + offset - 2, x + 4, grass_h + offset + 3), fill=(80, 185, 60))
+    # Small root-like details
+    draw.line([(15 * s // 64, 42 * s // 64), (22 * s // 64, 48 * s // 64)],
+             fill=(100, 75, 40, 100), width=1)
+    draw.line([(50 * s // 64, 55 * s // 64), (58 * s // 64, 52 * s // 64)],
+             fill=(100, 75, 40, 100), width=1)
 
-    # Highlight on grass
-    draw.rectangle((0, 2, size, 6), fill=(120, 230, 95, 100))
+    # ── GRASS LAYER with 3D depth ──
+    grass_h = int(22 * s / 64)
 
+    # Grass base layer (dark green at bottom of grass zone)
+    for y in range(grass_h + 8):
+        t = y / (grass_h + 8)
+        r = int(55 + t * 35)
+        g = int(140 + t * 55)
+        b = int(35 + t * 30)
+        draw.line([(0, y), (s, y)], fill=(r, g, b, 255))
+
+    # Wavy transition edge (grass meets dirt) with ambient occlusion
+    for x in range(0, s, 2):
+        wave = int(4 * math.sin(x * 0.15) + 2 * math.sin(x * 0.3 + 1))
+        base_y = grass_h + wave
+
+        # Ambient occlusion shadow below grass edge
+        for dy in range(6):
+            alpha = int(120 * (1 - dy / 6))
+            draw.point((x, base_y + dy), fill=(40, 60, 20, alpha))
+            if x + 1 < s:
+                draw.point((x + 1, base_y + dy), fill=(40, 60, 20, alpha))
+
+        # Grass drip (irregular edge)
+        drip_len = int(3 + 2 * math.sin(x * 0.4 + 0.7))
+        for dy in range(drip_len):
+            alpha = int(255 * (1 - dy / drip_len))
+            draw.point((x, base_y - dy), fill=(70, 160, 45, alpha))
+
+    # Individual grass blades (3D tufts)
+    blade_positions = list(range(0, s, 3))
+    for bx in blade_positions:
+        blade_h = int(6 + 4 * math.sin(bx * 0.2 + 0.5))
+        lean = int(2 * math.sin(bx * 0.3))
+        # Dark blade (shadow side)
+        for dy in range(blade_h):
+            t = dy / blade_h
+            px = bx + int(lean * t)
+            py = int(4 + (1 - t) * blade_h)
+            if 0 <= px < s and 0 <= py < s:
+                g_val = int(130 + t * 80)
+                draw.point((px, py), fill=(50, g_val, 30, int(200 + t * 55)))
+        # Light blade (highlight side)
+        if bx + 1 < s:
+            for dy in range(blade_h - 1):
+                t = dy / blade_h
+                px = bx + 1 + int(lean * t)
+                py = int(4 + (1 - t) * blade_h)
+                if 0 <= px < s and 0 <= py < s:
+                    g_val = int(170 + t * 60)
+                    draw.point((px, py), fill=(80, g_val, 45, int(160 + t * 55)))
+
+    # Top specular highlight (light hitting the grass canopy)
+    highlight = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    hd = ImageDraw.Draw(highlight)
+    for y in range(8):
+        alpha = int(80 * (1 - y / 8))
+        hd.line([(0, y + 2), (s, y + 2)], fill=(180, 255, 140, alpha))
+    img = Image.alpha_composite(img, highlight)
+
+    # ── LEFT EDGE ambient occlusion (subtle) ──
+    ao = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    aod = ImageDraw.Draw(ao)
+    for x in range(6):
+        alpha = int(30 * (1 - x / 6))
+        aod.line([(x, 0), (x, s)], fill=(0, 0, 0, alpha))
+    img = Image.alpha_composite(img, ao)
+
+    # Downscale to target size with high-quality resampling
+    img = img.resize((size, size), Image.LANCZOS)
     return img
 
 
@@ -469,7 +859,10 @@ def process_background(name, target_w, target_h, needs_transparency=False):
     img = Image.open(src)
 
     if needs_transparency:
-        img = remove_background(img, threshold=235)
+        # Use smart bg removal (corner-sampling) with high tolerance so that
+        # both shades of the grey checkerboard are removed while keeping
+        # white/light-coloured content like clouds intact.
+        img = remove_bg_smart(img, tolerance=80)
     else:
         img = img.convert("RGBA")
 

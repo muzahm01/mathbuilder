@@ -90,19 +90,25 @@ export default class MenuScene extends Phaser.Scene {
     // ── Fullscreen Button ────────────────────────
     addFullscreenButton(this, 40, 30);
 
-    // ── Mute Button ──────────────────────────────
+    // ── Mute Button (child-friendly touch target) ──
     let muted = this.sound.mute;
-    const muteBtn = this.add.text(760, 30, muted ? '🔇' : '🔊', {
-      fontSize: '24px'
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    const muteBg = this.add.circle(width - 40, 30, 24, 0x000000, 0.3)
+      .setInteractive({ useHandCursor: true });
+    const muteLabel = this.add.text(width - 40, 30, muted ? 'OFF' : 'SFX', {
+      fontSize: '12px',
+      fontFamily: 'Fredoka One',
+      color: '#ffffff'
+    }).setOrigin(0.5);
 
-    muteBtn.on('pointerdown', () => {
+    muteBg.on('pointerdown', () => {
       muted = !muted;
       this.sound.mute = muted;
-      muteBtn.setText(muted ? '🔇' : '🔊');
+      muteLabel.setText(muted ? 'OFF' : 'SFX');
+      muteBg.fillColor = muted ? 0x555555 : 0x000000;
     });
+    muteBg.on('pointerover', () => muteBg.setAlpha(1));
+    muteBg.on('pointerout', () => muteBg.setAlpha(0.7));
+    muteBg.setAlpha(0.7);
 
-    // ── Camera bloom for warm overall look ──────────
-    FXManager.addCameraBloom(this.cameras.main, { strength: 0.3, blurStrength: 0.8 });
   }
 }

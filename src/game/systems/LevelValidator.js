@@ -1,6 +1,10 @@
 /**
  * Validates level JSON data against the expected schema.
  * Used in tests to catch malformed level files early.
+ *
+ * Level JSON format:
+ *   { name, gridWidth, gridHeight, start: {gridX, gridY}, goal: {gridX, gridY},
+ *     platforms: [{gridX, gridY, width, tile}], gaps: [{gridX, gridY, width, correctAnswer}] }
  */
 
 export function validateLevel(data) {
@@ -15,8 +19,12 @@ export function validateLevel(data) {
     errors.push('Level must have a non-empty "name" string');
   }
 
-  if (typeof data.width !== 'number' || data.width < 1 || !Number.isInteger(data.width)) {
-    errors.push('"width" must be a positive integer');
+  if (typeof data.gridWidth !== 'number' || data.gridWidth < 1 || !Number.isInteger(data.gridWidth)) {
+    errors.push('"gridWidth" must be a positive integer');
+  }
+
+  if (typeof data.gridHeight !== 'number' || data.gridHeight < 1 || !Number.isInteger(data.gridHeight)) {
+    errors.push('"gridHeight" must be a positive integer');
   }
 
   // Platforms
@@ -24,8 +32,8 @@ export function validateLevel(data) {
     errors.push('"platforms" must be a non-empty array');
   } else {
     data.platforms.forEach((p, i) => {
-      if (typeof p.x !== 'number') errors.push(`platforms[${i}].x must be a number`);
-      if (typeof p.y !== 'number') errors.push(`platforms[${i}].y must be a number`);
+      if (typeof p.gridX !== 'number') errors.push(`platforms[${i}].gridX must be a number`);
+      if (typeof p.gridY !== 'number') errors.push(`platforms[${i}].gridY must be a number`);
       if (typeof p.width !== 'number' || p.width < 1) {
         errors.push(`platforms[${i}].width must be a positive number`);
       }
@@ -38,34 +46,34 @@ export function validateLevel(data) {
     errors.push('"gaps" must be an array');
   } else {
     data.gaps.forEach((g, i) => {
-      if (typeof g.x !== 'number') errors.push(`gaps[${i}].x must be a number`);
-      if (typeof g.y !== 'number') errors.push(`gaps[${i}].y must be a number`);
+      if (typeof g.gridX !== 'number') errors.push(`gaps[${i}].gridX must be a number`);
+      if (typeof g.gridY !== 'number') errors.push(`gaps[${i}].gridY must be a number`);
       if (typeof g.width !== 'number' || g.width < 1) {
         errors.push(`gaps[${i}].width must be a positive number`);
       }
-      if (typeof g.answer !== 'number' || g.answer < 1) {
-        errors.push(`gaps[${i}].answer must be a positive number`);
+      if (typeof g.correctAnswer !== 'number' || g.correctAnswer < 1) {
+        errors.push(`gaps[${i}].correctAnswer must be a positive number`);
       }
       // Answer should match gap width
-      if (typeof g.width === 'number' && typeof g.answer === 'number' && g.width !== g.answer) {
-        errors.push(`gaps[${i}].answer (${g.answer}) does not match width (${g.width})`);
+      if (typeof g.width === 'number' && typeof g.correctAnswer === 'number' && g.width !== g.correctAnswer) {
+        errors.push(`gaps[${i}].correctAnswer (${g.correctAnswer}) does not match width (${g.width})`);
       }
     });
   }
 
   // Player spawn
-  if (!data.player || typeof data.player.x !== 'number' || typeof data.player.y !== 'number') {
-    errors.push('"player" must have numeric x and y coordinates');
+  if (!data.start || typeof data.start.gridX !== 'number' || typeof data.start.gridY !== 'number') {
+    errors.push('"start" must have numeric gridX and gridY coordinates');
   }
 
   // Goal
-  if (!data.goal || typeof data.goal.x !== 'number' || typeof data.goal.y !== 'number') {
-    errors.push('"goal" must have numeric x and y coordinates');
+  if (!data.goal || typeof data.goal.gridX !== 'number' || typeof data.goal.gridY !== 'number') {
+    errors.push('"goal" must have numeric gridX and gridY coordinates');
   }
 
   // Goal should be to the right of player
-  if (data.player && data.goal && data.goal.x <= data.player.x) {
-    errors.push('Goal x should be greater than player x');
+  if (data.start && data.goal && data.goal.gridX <= data.start.gridX) {
+    errors.push('Goal gridX should be greater than start gridX');
   }
 
   return {

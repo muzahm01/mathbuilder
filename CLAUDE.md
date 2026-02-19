@@ -9,7 +9,7 @@ MathBuilder is a web-based 2D platformer game for children aged 5-8 where math b
 - **Language:** JavaScript (ES6 modules, no TypeScript)
 - **Hosting:** Vercel (static site)
 - **Persistence:** LocalStorage only (no backend, no accounts)
-- **Art Style:** "Soft Plastic Voxel" — Minecraft meets Mario made of smooth vinyl toys
+- **Art Style:** "Modern 3D Clay Render" — Fall Guys meets Yoshi's Crafted World with PBR materials, ambient occlusion, and volumetric lighting
 
 ## Project Structure
 
